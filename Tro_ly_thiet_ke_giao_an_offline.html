@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trợ lý thiết kế giáo án (bản offline)</title>
+<style>
+  :root{
+    --ink:#1E2A38; --ink2:#3A4A5E; --pine:#15634B; --pine-d:#0E4D3A;
+    --pine-bg:#E4F0EB; --ochre:#9C6B16; --ochre-bg:#F6EEDC;
+    --bg:#F6F5F1; --card:#FFFFFF; --line:#E4E2DB; --line2:#D7D4CB;
+    --text:#1C2530; --muted:#5E6878; --bloom:#EEF1F4; --err:#FBEBEA; --err-t:#9E2B25; --ok-t:#15634B;
+    --serif:Georgia,"Times New Roman",serif; --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:26px 20px 64px}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+  .brand{font-family:var(--serif);font-size:23px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.15;margin:0}
+  .brand .sub{display:block;font-family:var(--sans);font-size:12.5px;font-weight:400;color:var(--muted);margin-top:3px}
+  .nav{display:flex;gap:7px}
+  .nav button{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line2);background:#fff;color:var(--ink);border-radius:7px;padding:8px 14px;cursor:pointer}
+  .nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .rail{display:flex;margin-bottom:24px;overflow-x:auto;padding-bottom:2px}
+  .node{flex:1;min-width:104px;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center}
+  .node::before,.node::after{content:"";position:absolute;top:15px;height:2px;background:var(--line2);width:50%}
+  .node::before{left:0}.node::after{right:0}
+  .node:first-child::before,.node:last-child::after{display:none}
+  .node.done::before,.node.done::after,.node.on::before{background:var(--pine)}
+  .node .dot{width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid var(--line2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600;position:relative;z-index:1}
+  .node.on .dot{border-color:var(--pine);background:var(--pine);color:#fff}
+  .node.done .dot{border-color:var(--pine);background:var(--pine-bg);color:var(--pine-d)}
+  .node .lbl{font-size:11.5px;color:var(--muted);margin-top:7px;font-weight:500;max-width:96px}
+  .node.on .lbl{color:var(--ink)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:24px;margin-bottom:16px;box-shadow:0 1px 2px rgba(30,42,56,.03)}
+  h2{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--ink);margin:0 0 5px}
+  .sub{font-size:13.5px;color:var(--muted);margin:0 0 18px}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--pine);margin:0 0 8px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin:14px 0 5px}
+  label .opt{font-weight:400;color:var(--muted)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  input[type=text],select,textarea{width:100%;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font:inherit;font-size:14px;color:var(--text);background:#fff}
+  textarea{min-height:66px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--pine);outline-offset:1px;border-color:var(--pine)}
+  .checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px}
+  .checks label{display:inline-flex;align-items:center;gap:7px;font-weight:400;margin:0;border:1px solid var(--line2);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px}
+  .checks input{width:auto;margin:0;accent-color:var(--pine)}
+  .btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  button.act{font:inherit;font-size:14px;font-weight:600;border-radius:8px;padding:11px 20px;cursor:pointer;border:1px solid transparent}
+  .primary{background:var(--pine);color:#fff}.primary:hover{background:var(--pine-d)}
+  .ghost{background:#fff;color:var(--ink);border:1px solid var(--line2)}.ghost:hover{border-color:var(--ink2)}
+  button:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+  .err{background:var(--err);color:var(--err-t);border-radius:8px;padding:12px 14px;font-size:13.5px;margin-top:13px;display:none}
+  .err.show{display:block}
+  .note{font-size:12.5px;color:#7A5A12;background:var(--ochre-bg);border:1px solid #E2C685;border-radius:8px;padding:11px 13px;margin-top:16px}
+  /* verb bank / chips */
+  .bank{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFCFB;margin-bottom:10px}
+  .bank .bt{font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:8px}
+  .lvl{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-bottom:6px}
+  .lvl .ln{font-size:11.5px;font-weight:700;color:var(--pine-d);min-width:78px}
+  .chip{font:inherit;font-size:12px;border:1px solid var(--line2);background:#fff;color:var(--ink);border-radius:20px;padding:4px 11px;cursor:pointer}
+  .chip:hover{border-color:var(--pine);background:var(--pine-bg)}
+  .tgl{display:inline-flex;gap:0;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin-left:8px}
+  .tgl button{font:inherit;font-size:12px;border:none;background:#fff;color:var(--ink);padding:5px 11px;cursor:pointer}
+  .tgl button.on{background:var(--ink);color:#fff}
+  /* rubric editable */
+  .rubric-tb{border-collapse:collapse;width:100%;min-width:680px;font-size:12px;margin-top:4px}
+  .rubric-tb th,.rubric-tb td{border:1px solid var(--line2);padding:6px 8px;text-align:left;vertical-align:top}
+  .rubric-tb th{background:var(--bloom);color:var(--ink);font-weight:600;font-size:11.5px;white-space:nowrap}
+  .rubric-tb td.tc{font-weight:600;background:#FBFAF7}
+  .rubric-tb td[contenteditable]{min-width:78px}
+  .rubric-tb td:focus{outline:2px solid var(--pine);outline-offset:-2px}
+  .scroll{overflow-x:auto;border-radius:8px}
+  /* technique blocks */
+  .phase-h{font-family:var(--serif);font-size:14.5px;font-weight:700;color:var(--pine-d);margin:20px 0 9px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  .phase-h:first-child{margin-top:0}
+  .tech-desc{font-size:12.5px;color:var(--muted);margin:6px 0 2px}
+  /* doc */
+  .gh-doc{font-size:14px;line-height:1.7}
+  .gh-doc h3{font-family:var(--serif);font-size:16px;color:var(--ink);margin:18px 0 8px;text-align:center}
+  .gh-doc h4{font-size:14px;color:var(--ink);margin:16px 0 6px;font-weight:700}
+  .gh-doc p,.gh-doc li{font-size:13.5px}
+  .gh-doc .rubric-tb{min-width:0}
+  .plan-title{margin-bottom:4px}
+  .edit-hint{font-size:12.5px;color:var(--pine-d);font-weight:600;margin:14px 0 7px}
+  .editable{border:1px dashed var(--line2);border-radius:9px;padding:14px 16px;background:#FFFDF9;min-height:90px}
+  .editable:focus{outline:none;border:1px solid var(--pine);box-shadow:0 0 0 2px var(--pine-bg)}
+  .pub{font-size:12px;color:var(--muted);margin-top:7px}
+  .search{display:flex;gap:8px;margin-bottom:16px}
+  .lib-item{border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .lib-item .li-t{font-size:14.5px;font-weight:700;color:var(--ink);cursor:pointer}
+  .lib-item .li-m{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .lib-x{font:inherit;font-size:12px;border:1px solid var(--line2);background:#fff;color:var(--err-t);border-radius:7px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+  .empty{font-size:13.5px;color:var(--muted);text-align:center;padding:30px 16px}
+  @media(max-width:560px){ .grid2{grid-template-columns:1fr} .node .lbl{display:none} .node{min-width:48px} .lvl .ln{min-width:auto;width:100%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1 class="brand">Trợ lý thiết kế giáo án<span class="sub">Bản offline · không cần AI/khóa · theo GDPT 2018 &amp; Công văn 5512</span></h1>
+    <div class="nav">
+      <button id="nav-create" class="on" type="button" onclick="setView('create')">Tạo giáo án</button>
+      <button id="nav-lib" type="button" onclick="setView('library')">Thư viện (máy này)</button>
+    </div>
+  </div>
+
+  <div id="view-create">
+    <div class="rail" id="rail">
+      <div class="node on" data-s="1"><div class="dot">1</div><div class="lbl">Thông tin bài học</div></div>
+      <div class="node" data-s="2"><div class="dot">2</div><div class="lbl">Mục tiêu</div></div>
+      <div class="node" data-s="3"><div class="dot">3</div><div class="lbl">Đánh giá (rubric)</div></div>
+      <div class="node" data-s="4"><div class="dot">4</div><div class="lbl">Chọn hoạt động</div></div>
+      <div class="node" data-s="5"><div class="dot">5</div><div class="lbl">Giáo án</div></div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step-1" class="card">
+      <p class="eyebrow">Bước 1 · Định khung</p>
+      <h2>Thông tin bài học</h2>
+      <p class="sub">Điền thông tin. Các bước sau cung cấp ngân hàng mẫu (động từ, kỹ thuật, rubric) để bạn lắp ghép giáo án.</p>
+      <div class="grid2">
+        <div><label>Môn học</label><input type="text" id="i-mon" placeholder="VD: Khoa học tự nhiên"></div>
+        <div><label>Khối lớp</label>
+          <select id="i-lop"><option value="">— chọn —</option>
+          <option>Lớp 1</option><option>Lớp 2</option><option>Lớp 3</option><option>Lớp 4</option><option>Lớp 5</option>
+          <option>Lớp 6</option><option>Lớp 7</option><option>Lớp 8</option><option>Lớp 9</option>
+          <option>Lớp 10</option><option>Lớp 11</option><option>Lớp 12</option></select></div>
+      </div>
+      <div class="grid2">
+        <div><label>Tên bài / chủ đề</label><input type="text" id="i-bai" placeholder="VD: Quang hợp ở thực vật"></div>
+        <div><label>Thời lượng</label>
+          <select id="i-tiet"><option>1 tiết</option><option>2 tiết</option><option>3 tiết</option><option>4 tiết trở lên</option></select></div>
+      </div>
+      <label>Yêu cầu cần đạt (GDPT 2018) <span class="opt">(không bắt buộc)</span></label>
+      <textarea id="i-yccd" placeholder="Dán yêu cầu cần đạt từ chương trình nếu có…"></textarea>
+      <label>Thiết bị sẵn có</label>
+      <div class="checks" id="i-thietbi">
+        <label><input type="checkbox" value="Máy chiếu">Máy chiếu</label>
+        <label><input type="checkbox" value="Máy tính / Internet">Máy tính / Internet</label>
+        <label><input type="checkbox" value="Bảng, phấn/bút">Bảng, phấn/bút</label>
+        <label><input type="checkbox" value="Đồ dùng trực quan">Đồ dùng trực quan</label>
+        <label><input type="checkbox" value="Thiết bị thí nghiệm">Thiết bị thí nghiệm</label>
+      </div>
+      <div class="err" id="e-1"></div>
+      <div class="btns"><button class="act primary" type="button" onclick="next1()">Tiếp: Mục tiêu →</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step-2" class="card" style="display:none">
+      <p class="eyebrow">Bước 2 · Mục tiêu trước tiên</p>
+      <h2>Mục tiêu bài học</h2>
+      <p class="sub">Nhấn vào động từ để chèn vào ô mục tiêu, rồi điền nội dung. Bạn cũng gõ tự do được. Các bước sau bám theo mục tiêu này.</p>
+
+      <div class="bank">
+        <div class="bt">Ngân hàng động từ theo thang Bloom
+          <span class="tgl" id="verb-target"><button class="on" type="button" data-t="o-kt" onclick="setVerbTarget('o-kt',this)">→ Kiến thức</button><button type="button" data-t="o-nl" onclick="setVerbTarget('o-nl',this)">→ Năng lực</button></span>
+        </div>
+        <div id="verb-bank"></div>
+      </div>
+
+      <label>Về kiến thức</label><textarea id="o-kt"></textarea>
+      <label>Về năng lực <span class="opt">(năng lực chung + đặc thù — nhấn nhãn để chèn)</span></label>
+      <div class="checks" id="nl-chips"></div>
+      <textarea id="o-nl"></textarea>
+      <label>Về phẩm chất <span class="opt">(nhấn nhãn để chèn)</span></label>
+      <div class="checks" id="pc-chips"></div>
+      <textarea id="o-pc"></textarea>
+
+      <div class="err" id="e-2"></div>
+      <div class="btns">
+        <button class="act primary" type="button" onclick="next2()">Tiếp: Đánh giá →</button>
+        <button class="act ghost" type="button" onclick="goStep(1)">Quay lại</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step-3" class="card" style="display:none">
+      <p class="eyebrow">Bước 3 · Minh chứng</p>
+      <h2>Công cụ đánh giá — Rubric theo thang Bloom</h2>
+      <p class="sub">Đây là rubric mẫu. Nhấn vào ô để sửa cho đúng bài. Có thể thêm dòng tiêu chí.</p>
+      <label>Tiêu chí thành công <span class="opt">(mỗi dòng một ý)</span></label>
+      <textarea id="r-success" style="min-height:80px"></textarea>
+      <label>Rubric <span class="opt">(bấm vào ô bất kỳ để chỉnh sửa)</span></label>
+      <div class="scroll"><table class="rubric-tb"><thead><tr id="r-head"></tr></thead><tbody id="r-body"></tbody></table></div>
+      <div class="btns" style="margin-top:10px"><button class="act ghost" type="button" onclick="addRubricRow()">+ Thêm dòng tiêu chí</button>
+        <button class="act ghost" type="button" onclick="resetRubric()">↺ Rubric mẫu</button></div>
+      <div class="err" id="e-3"></div>
+      <div class="btns">
+        <button class="act primary" type="button" onclick="next3()">Tiếp: Chọn hoạt động →</button>
+        <button class="act ghost" type="button" onclick="goStep(2)">Quay lại</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step-4" class="card" style="display:none">
+      <p class="eyebrow">Bước 4 · Hoạt động dạy học</p>
+      <h2>Chọn kỹ thuật cho từng pha</h2>
+      <p class="sub">Mỗi pha chọn một kỹ thuật từ thư viện — các ô sẽ tự điền theo mẫu, bạn thay [chủ đề]/[nội dung] cho hợp bài. Chọn "Tự nhập" nếu muốn viết mới.</p>
+      <div id="tech-blocks"></div>
+      <div class="err" id="e-4"></div>
+      <div class="btns">
+        <button class="act primary" type="button" onclick="next4()">Tiếp: Xem giáo án →</button>
+        <button class="act ghost" type="button" onclick="goStep(3)">Quay lại</button>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div id="step-5" class="card" style="display:none">
+      <p class="eyebrow">Bước 5 · Xem lại bản nháp</p>
+      <h2>Bản nháp giáo án</h2>
+      <p class="sub">Cấu trúc theo Công văn 5512. Chỉnh sửa trực tiếp trong khung nếu cần; bản tải về/lưu sẽ đúng như bạn sửa.</p>
+      <div class="gh-doc plan-title" id="plan-title"></div>
+      <div class="edit-hint">✎ Bạn có thể chỉnh sửa trực tiếp nội dung trong khung dưới đây.</div>
+      <div class="gh-doc editable" id="plan-doc" contenteditable="true" spellcheck="false"></div>
+      <div class="btns" style="margin-top:12px"><button class="act ghost" type="button" onclick="restoreDraft()">↺ Khôi phục bản ghép tự động</button></div>
+      <div class="note">⚠ Đây là khung gợi ý từ mẫu — hãy <b>rà soát và hoàn thiện nội dung chuyên môn</b> cho đúng bài trước khi dạy.</div>
+
+      <h2 style="margin-top:24px;font-size:15px">Lưu vào thư viện (trên máy này)</h2>
+      <div class="grid2">
+        <div><label>Tiêu đề giáo án</label><input type="text" id="s-title"></div>
+        <div><label>Tên người soạn <span class="opt">(không bắt buộc)</span></label><input type="text" id="s-author"></div>
+      </div>
+      <label>Từ khóa <span class="opt">(cách nhau bởi dấu phẩy)</span></label>
+      <input type="text" id="s-keys">
+      <p class="pub">Thư viện lưu bằng bộ nhớ trình duyệt — chỉ trên máy/trình duyệt này. Dùng nút Sao lưu để giữ bản dự phòng.</p>
+
+      <h2 style="margin-top:20px;font-size:15px">Thông tin hành chính <span class="opt" style="font-family:var(--sans);font-weight:400;font-size:12.5px">(in trên đầu file Word, có thể bỏ trống)</span></h2>
+      <div class="grid2">
+        <div><label>Trường</label><input type="text" id="s-truong"></div>
+        <div><label>Tổ chuyên môn</label><input type="text" id="s-to"></div>
+      </div>
+      <label>Họ và tên giáo viên</label><input type="text" id="s-gv">
+
+      <div class="btns">
+        <button class="act primary" type="button" onclick="downloadPlan()">Tải giáo án Word (5512)</button>
+        <button class="act ghost" type="button" onclick="saveLocal()">Lưu vào thư viện</button>
+        <button class="act ghost" type="button" onclick="goStep(4)">Quay lại chọn hoạt động</button>
+        <button class="act ghost" type="button" onclick="resetAll()">Tạo giáo án mới</button>
+      </div>
+      <div class="err" id="e-5" style="background:var(--pine-bg);color:var(--ok-t)"></div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="view-library" style="display:none">
+    <div class="card">
+      <h2>Thư viện giáo án (trên máy này)</h2>
+      <p class="sub">Lưu bằng bộ nhớ trình duyệt. Sao lưu ra file JSON để chuyển máy hoặc giữ dự phòng.</p>
+      <div class="search">
+        <input type="text" id="lib-q" placeholder="Tìm theo từ khóa…" onkeydown="if(event.key==='Enter')runSearch()">
+        <button class="act primary" type="button" onclick="runSearch()">Tìm</button>
+      </div>
+      <div class="btns" style="margin-top:0;margin-bottom:14px">
+        <button class="act ghost" type="button" onclick="exportLib()">⤓ Sao lưu (JSON)</button>
+        <label class="act ghost" style="cursor:pointer;margin:0">⤒ Khôi phục<input type="file" accept="application/json" style="display:none" onchange="importLib(event)"></label>
+      </div>
+      <div id="lib-list"><div class="empty">Đang tải…</div></div>
+      <div id="lib-detail" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+ ❶ NGÂN HÀNG NỘI DUNG — TOÀN BỘ DỮ LIỆU MẪU NẰM Ở ĐÂY.
+    Bạn có thể THÊM/SỬA tự do. Muốn nhúng bộ 30 kỹ thuật của bạn:
+    thêm phần tử vào DATA.techniques[<pha>] theo đúng mẫu:
+      { ten:"...", mo_ta:"...", muc_tieu:"...", noi_dung:"...", to_chuc:"...", san_pham:"..." }
+    Dùng [chủ đề] / [nội dung] làm chỗ trống để điền theo bài.
+ ===================================================================== */
+const DATA = {
+  bloomVerbs: {
+    nho:       ["nêu","kể tên","liệt kê","nhận biết","nhắc lại","định nghĩa","xác định","phát biểu","trình bày lại"],
+    hieu:      ["giải thích","mô tả","tóm tắt","diễn giải","phân loại","cho ví dụ","minh họa","so sánh","khái quát"],
+    vanDung:   ["áp dụng","sử dụng","thực hiện","giải quyết","tính toán","vận dụng","triển khai","minh chứng","làm thí nghiệm"],
+    phanTich:  ["phân tích","phân biệt","đối chiếu","lập sơ đồ","tổ chức","kiểm tra","phân tách","xác định nguyên nhân"],
+    danhGia:   ["đánh giá","nhận xét","phê phán","biện luận","lập luận","bảo vệ quan điểm","kiểm chứng","kết luận","thẩm định"],
+    sangTao:   ["thiết kế","xây dựng","sáng tạo","đề xuất","lập kế hoạch","phát triển","biên soạn","tạo ra","sáng tác"]
+  },
+  nangLucChung: ["Tự chủ và tự học","Giao tiếp và hợp tác","Giải quyết vấn đề và sáng tạo"],
+  phamChat: ["Yêu nước","Nhân ái","Chăm chỉ","Trung thực","Trách nhiệm"],
+  techniques: {
+    khoi_dong: [
+      {ten:"KWL (Biết – Muốn biết – Học được)", mo_ta:"Khơi gợi điều đã biết và muốn biết về chủ đề.",
+       muc_tieu:"Kích hoạt kiến thức nền và tạo nhu cầu tìm hiểu về [chủ đề].",
+       noi_dung:"HS ghi điều đã Biết (K) và điều Muốn biết (W) về [chủ đề].",
+       to_chuc:"GV chiếu bảng KWL → HS điền cột K, W (cá nhân 2', chia sẻ cặp đôi 2') → GV chốt vài câu hỏi định hướng. Phân hóa: HS yếu nêu 1 ý, HS khá đặt câu hỏi sâu.",
+       san_pham:"Bảng KWL (cột K, W) của HS."},
+      {ten:"Câu hỏi tình huống / nghịch lý", mo_ta:"Nêu tình huống gây tò mò dẫn vào bài.",
+       muc_tieu:"Gợi mâu thuẫn nhận thức, tạo hứng thú với [chủ đề].",
+       noi_dung:"HS suy nghĩ và dự đoán câu trả lời cho một tình huống về [chủ đề].",
+       to_chuc:"GV nêu tình huống → HS dự đoán nhanh (giơ tay/viết bảng con) → GV dẫn dắt vào bài. Phân hóa: chấp nhận nhiều mức câu trả lời.",
+       san_pham:"Câu dự đoán/giả thuyết ban đầu của HS."},
+      {ten:"Trò chơi đoán nhanh", mo_ta:"Đoán từ khóa/hình ảnh liên quan chủ đề.",
+       muc_tieu:"Tạo không khí và kết nối hiểu biết sẵn có về [chủ đề].",
+       noi_dung:"HS đoán từ khóa/hình ảnh liên quan [chủ đề].",
+       to_chuc:"GV tổ chức trò chơi đoán nhanh theo nhóm/cá nhân (3–5'). Phân hóa: gợi ý thêm cho HS chưa đoán được.",
+       san_pham:"Đáp án trò chơi; danh sách từ khóa gợi mở."}
+    ],
+    hinh_thanh: [
+      {ten:"Think – Pair – Share (Suy nghĩ – Cặp đôi – Chia sẻ)", mo_ta:"Cá nhân nghĩ → cặp đôi trao đổi → chia sẻ lớp.",
+       muc_tieu:"HS kiến tạo hiểu biết về [chủ đề] qua trao đổi.",
+       noi_dung:"HS trả lời câu hỏi/nhiệm vụ về [nội dung].",
+       to_chuc:"Suy nghĩ cá nhân (2') → trao đổi cặp đôi (3') → vài cặp chia sẻ, GV chốt kiến thức. Phân hóa: câu hỏi phụ cho cặp hoàn thành sớm.",
+       san_pham:"Câu trả lời của cặp; ghi chép kiến thức."},
+      {ten:"Mảnh ghép (Jigsaw)", mo_ta:"Nhóm chuyên gia → nhóm mảnh ghép.",
+       muc_tieu:"HS làm chủ một phần kiến thức [chủ đề] rồi dạy lại bạn.",
+       noi_dung:"Mỗi nhóm chuyên gia tìm hiểu một phần của [nội dung].",
+       to_chuc:"Vòng 1: nhóm chuyên gia nghiên cứu phần được giao. Vòng 2: ghép nhóm mới, mỗi bạn trình bày phần của mình → tổng hợp. Phân hóa: chia phần theo độ khó phù hợp.",
+       san_pham:"Phiếu tổng hợp kiến thức của nhóm mảnh ghép."},
+      {ten:"Khám phá có hướng dẫn (phiếu học tập)", mo_ta:"HS tự rút ra kiến thức qua phiếu dẫn dắt.",
+       muc_tieu:"HS tự hình thành kiến thức [chủ đề] theo các bước có giàn giáo.",
+       noi_dung:"HS hoàn thành phiếu học tập dẫn dắt về [nội dung].",
+       to_chuc:"GV phát phiếu có câu hỏi tăng dần độ khó → HS làm theo nhóm/cá nhân → đối chiếu, GV chốt. Phân hóa: phiếu có phần cơ bản và phần nâng cao.",
+       san_pham:"Phiếu học tập đã hoàn thành."},
+      {ten:"Dạy học theo trạm", mo_ta:"HS luân phiên qua các trạm nhiệm vụ.",
+       muc_tieu:"HS chủ động tiếp cận nhiều khía cạnh của [chủ đề].",
+       noi_dung:"Mỗi trạm một nhiệm vụ về [nội dung] (đọc, quan sát, thực hành…).",
+       to_chuc:"Bố trí 3–4 trạm → nhóm HS luân phiên, mỗi trạm 5–7' → tổng kết. Phân hóa: trạm hỗ trợ và trạm thử thách.",
+       san_pham:"Sản phẩm/ghi chép tại mỗi trạm."}
+    ],
+    luyen_tap: [
+      {ten:"Trò chơi ôn tập (đố vui/quiz)", mo_ta:"Củng cố kiến thức qua câu hỏi nhanh.",
+       muc_tieu:"HS củng cố và ghi nhớ kiến thức [chủ đề].",
+       noi_dung:"HS trả lời bộ câu hỏi ôn tập về [nội dung].",
+       to_chuc:"GV tổ chức quiz theo đội (giơ bảng/đáp nhanh) → chữa và nhấn mạnh lỗi sai phổ biến. Phân hóa: câu hỏi nhiều mức điểm.",
+       san_pham:"Kết quả quiz; bảng tổng hợp lỗi sai."},
+      {ten:"Bài tập phân hóa theo mức", mo_ta:"Bài tập chia mức cơ bản → nâng cao.",
+       muc_tieu:"HS luyện tập [chủ đề] phù hợp năng lực bản thân.",
+       noi_dung:"HS làm bài tập [nội dung] ở mức tự chọn/được giao.",
+       to_chuc:"GV phát bài tập 3 mức → HS chọn/được giao mức phù hợp → chữa mẫu. Phân hóa: chính là cốt lõi của kỹ thuật.",
+       san_pham:"Bài làm theo mức của HS."},
+      {ten:"Khăn trải bàn", mo_ta:"Ý kiến cá nhân → thống nhất nhóm.",
+       muc_tieu:"HS vận dụng và thống nhất cách giải [chủ đề] trong nhóm.",
+       noi_dung:"HS giải nhiệm vụ về [nội dung], ghi ý cá nhân rồi thống nhất.",
+       to_chuc:"Mỗi HS ghi ý ở ô riêng → nhóm thảo luận, ghi ý chung ở giữa → trình bày. Phân hóa: vai trò trong nhóm theo năng lực.",
+       san_pham:"Tờ khăn trải bàn của nhóm."}
+    ],
+    van_dung: [
+      {ten:"Dự án nhỏ / sản phẩm thực tế", mo_ta:"Tạo sản phẩm vận dụng kiến thức.",
+       muc_tieu:"HS vận dụng kiến thức [chủ đề] tạo ra sản phẩm thực tế.",
+       noi_dung:"HS thực hiện một sản phẩm/dự án nhỏ liên quan [nội dung].",
+       to_chuc:"GV giao nhiệm vụ + tiêu chí → HS lập kế hoạch, thực hiện (có thể về nhà) → báo cáo. Phân hóa: quy mô sản phẩm theo nhóm.",
+       san_pham:"Sản phẩm/dự án của HS kèm thuyết minh."},
+      {ten:"Giải quyết vấn đề thực tiễn", mo_ta:"Áp dụng kiến thức vào tình huống thật.",
+       muc_tieu:"HS dùng kiến thức [chủ đề] giải quyết một vấn đề thực tiễn.",
+       noi_dung:"HS đề xuất giải pháp cho một tình huống thực tế về [nội dung].",
+       to_chuc:"GV nêu vấn đề thực tế → HS phân tích, đề xuất giải pháp theo nhóm → phản biện. Phân hóa: mức độ phức tạp của vấn đề.",
+       san_pham:"Bản đề xuất giải pháp của nhóm."},
+      {ten:"Đóng vai / mô phỏng", mo_ta:"Nhập vai tình huống để vận dụng.",
+       muc_tieu:"HS vận dụng [chủ đề] qua trải nghiệm nhập vai.",
+       noi_dung:"HS đóng vai một tình huống liên quan [nội dung].",
+       to_chuc:"GV nêu kịch bản → nhóm chuẩn bị và trình diễn → nhận xét theo tiêu chí. Phân hóa: vai phù hợp năng lực.",
+       san_pham:"Phần trình diễn và nhận xét."}
+    ]
+  },
+  rubricTemplate: {
+    tieu_chi_thanh_cong: [
+      "HS hoàn thành nhiệm vụ học tập theo yêu cầu.",
+      "HS trình bày/giải thích được nội dung trọng tâm của bài.",
+      "HS vận dụng được kiến thức vào tình huống/bài tập mới."
+    ],
+    rubric: [
+      {tieu_chi:"Mức độ nắm kiến thức", nho:"Nêu được khái niệm/sự kiện cơ bản", hieu:"Giải thích bằng lời của mình", vanDung:"Áp dụng vào ví dụ/bài tập", phanTich:"Phân tích mối quan hệ giữa các yếu tố", danhGia:"Nhận xét, đánh giá có căn cứ", sangTao:"Đề xuất ý tưởng/sản phẩm mới"},
+      {tieu_chi:"Hợp tác & trình bày", nho:"Tham gia ở mức tối thiểu", hieu:"Nêu được ý kiến cá nhân", vanDung:"Phối hợp hoàn thành nhiệm vụ nhóm", phanTich:"Phân công, điều phối hợp lý", danhGia:"Phản biện, góp ý cho nhóm khác", sangTao:"Dẫn dắt nhóm tạo sản phẩm sáng tạo"}
+    ]
+  }
+};
+
+/* ===== hạ tầng ===== */
+const PHASES=[["khoi_dong","Hoạt động 1 — Khởi động"],["hinh_thanh","Hoạt động 2 — Hình thành kiến thức mới"],
+  ["luyen_tap","Hoạt động 3 — Luyện tập"],["van_dung","Hoạt động 4 — Vận dụng"]];
+const BLOOM=[["nho","Nhớ"],["hieu","Hiểu"],["vanDung","Vận dụng"],["phanTich","Phân tích"],["danhGia","Đánh giá"],["sangTao","Sáng tạo"]];
+const LS_KEY="giaoan_offline_lib_v1";
+const S={intake:{},obj:{},picks:{}};
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+function err(id,msg,ok){const e=$(id);e.textContent=msg;e.classList.add("show");if(ok)e.style.background="var(--pine-bg)",e.style.color="var(--ok-t)";}
+function clearErr(id){$(id).classList.remove("show");}
+
+/* ===== thư viện cục bộ (localStorage + dự phòng bộ nhớ khi xem trong Claude) ===== */
+let useLS=true, mem=[];
+try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); }catch(e){ useLS=false; }
+const Store={
+  all(){ if(useLS){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]"); }catch(e){ return []; } } return mem.slice(); },
+  write(arr){ if(useLS){ try{ localStorage.setItem(LS_KEY, JSON.stringify(arr)); return; }catch(e){} } mem=arr.slice(); },
+  save(it){ const a=this.all(); a.unshift(it); this.write(a); },
+  remove(id){ this.write(this.all().filter(x=>x.id!==id)); }
+};
+
+function setView(v){
+  $("view-create").style.display=v==="create"?"block":"none";
+  $("view-library").style.display=v==="library"?"block":"none";
+  $("nav-create").classList.toggle("on",v==="create");
+  $("nav-lib").classList.toggle("on",v==="library");
+  if(v==="library") loadLib();
+}
+function goStep(n){
+  for(let i=1;i<=5;i++) $("step-"+i).style.display=i===n?"block":"none";
+  document.querySelectorAll("#rail .node").forEach(nd=>{const s=+nd.dataset.s;nd.classList.toggle("on",s===n);nd.classList.toggle("done",s<n);});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== BƯỚC 1 ===== */
+function next1(){
+  clearErr("e-1");
+  const d={mon:$("i-mon").value.trim(),lop:$("i-lop").value,bai:$("i-bai").value.trim(),tiet:$("i-tiet").value,
+    yccd:$("i-yccd").value.trim(),thietbi:[...$("i-thietbi").querySelectorAll("input:checked")].map(c=>c.value)};
+  if(!d.mon||!d.lop||!d.bai){ err("e-1","Hãy nhập Môn học, Khối lớp và Tên bài."); return; }
+  S.intake=d; goStep(2);
+}
+
+/* ===== BƯỚC 2: mục tiêu ===== */
+let verbTarget="o-kt";
+function setVerbTarget(id,btn){ verbTarget=id; $("verb-target").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===btn)); }
+function appendLine(id,text){ const t=$(id); t.value += (t.value && !t.value.endsWith("\n") ? "\n" : "") + text; t.focus(); }
+function appendVerb(v){ const t=$(verbTarget); const cur=t.value; t.value = cur + (cur && !cur.endsWith("\n") && !cur.endsWith(" ") ? " " : "") + v + " được "; t.focus(); }
+function renderObjHelpers(){
+  let vb="";
+  BLOOM.forEach(([k,label])=>{
+    vb+='<div class="lvl"><span class="ln">'+label+':</span>'+DATA.bloomVerbs[k].map(v=>'<button class="chip" type="button" onclick="appendVerb(\''+v.replace(/'/g,"\\'")+'\')">'+esc(v)+'</button>').join("")+'</div>';
+  });
+  $("verb-bank").innerHTML=vb;
+  $("nl-chips").innerHTML=DATA.nangLucChung.map(n=>'<label onclick="appendLine(\'o-nl\',\'Góp phần phát triển năng lực '+n.replace(/'/g,"\\'")+' thông qua …\')">'+esc(n)+'</label>').join("");
+  $("pc-chips").innerHTML=DATA.phamChat.map(n=>'<label onclick="appendLine(\'o-pc\',\'Bồi dưỡng phẩm chất '+n.replace(/'/g,"\\'")+': …\')">'+esc(n)+'</label>').join("");
+}
+function next2(){
+  clearErr("e-2");
+  S.obj={kt:$("o-kt").value.trim(),nl:$("o-nl").value.trim(),pc:$("o-pc").value.trim()};
+  if(!S.obj.kt&&!S.obj.nl&&!S.obj.pc){ err("e-2","Hãy nhập ít nhất một mục tiêu."); return; }
+  if(!$("r-body").children.length) resetRubric();
+  goStep(3);
+}
+
+/* ===== BƯỚC 3: rubric ===== */
+function resetRubric(){
+  $("r-success").value=DATA.rubricTemplate.tieu_chi_thanh_cong.join("\n");
+  $("r-head").innerHTML="<th>Tiêu chí</th>"+BLOOM.map(b=>"<th>"+b[1]+"</th>").join("");
+  $("r-body").innerHTML=DATA.rubricTemplate.rubric.map(r=>rubricRowHTML(r)).join("");
+}
+function rubricRowHTML(r){
+  r=r||{};
+  return "<tr><td class='tc' contenteditable='true'>"+esc(r.tieu_chi||"")+"</td>"+
+    BLOOM.map(b=>"<td contenteditable='true'>"+esc(r[b[0]]||"")+"</td>").join("")+"</tr>";
+}
+function addRubricRow(){ $("r-body").insertAdjacentHTML("beforeend", rubricRowHTML({})); }
+function readRubric(){
+  const rows=[...$("r-body").querySelectorAll("tr")].map(tr=>{
+    const c=tr.children; const o={tieu_chi:c[0].textContent.trim()};
+    BLOOM.forEach((b,i)=>o[b[0]]=c[i+1].textContent.trim());
+    return o;
+  }).filter(o=>o.tieu_chi);
+  return {tieu_chi_thanh_cong:$("r-success").value.split("\n").map(x=>x.trim()).filter(Boolean), rubric:rows};
+}
+function next3(){ S.rubric=readRubric(); if(!$("tech-blocks").children.length) renderTechniques(); goStep(4); }
+
+/* ===== BƯỚC 4: kỹ thuật ===== */
+function renderTechniques(){
+  let h="";
+  PHASES.forEach(([key,name])=>{
+    const opts=DATA.techniques[key]||[];
+    h+='<div class="phase-h">'+esc(name)+'</div>';
+    h+='<select id="sel-'+key+'" onchange="onTech(\''+key+'\')"><option value="-1">— Tự nhập —</option>'+
+      opts.map((t,i)=>'<option value="'+i+'">'+esc(t.ten)+'</option>').join("")+'</select>';
+    h+='<div class="tech-desc" id="desc-'+key+'"></div>';
+    h+='<label>Tên hoạt động</label><textarea id="f-'+key+'-ten" style="min-height:40px"></textarea>';
+    h+='<label>Mục tiêu</label><textarea id="f-'+key+'-mt"></textarea>';
+    h+='<label>Nội dung (nhiệm vụ HS)</label><textarea id="f-'+key+'-nd"></textarea>';
+    h+='<label>Tổ chức thực hiện</label><textarea id="f-'+key+'-tc"></textarea>';
+    h+='<label>Sản phẩm</label><textarea id="f-'+key+'-sp"></textarea>';
+  });
+  $("tech-blocks").innerHTML=h;
+  PHASES.forEach(([key])=>{ if((DATA.techniques[key]||[]).length){ $("sel-"+key).value="0"; onTech(key); } });
+}
+function onTech(key){
+  const i=+$("sel-"+key).value;
+  const t=(DATA.techniques[key]||[])[i];
+  $("desc-"+key).textContent = t ? ("Kỹ thuật: "+t.ten+(t.mo_ta?" — "+t.mo_ta:"")) : "Tự nhập hoạt động.";
+  $("f-"+key+"-ten").value = t ? t.ten : "";
+  $("f-"+key+"-mt").value  = t ? t.muc_tieu : "";
+  $("f-"+key+"-nd").value  = t ? t.noi_dung : "";
+  $("f-"+key+"-tc").value  = t ? t.to_chuc : "";
+  $("f-"+key+"-sp").value  = t ? t.san_pham : "";
+}
+function next4(){
+  clearErr("e-4");
+  S.picks={};
+  let any=false;
+  PHASES.forEach(([key])=>{
+    const o={ten:$("f-"+key+"-ten").value.trim(),muc_tieu:$("f-"+key+"-mt").value.trim(),
+      noi_dung:$("f-"+key+"-nd").value.trim(),to_chuc:$("f-"+key+"-tc").value.trim(),san_pham:$("f-"+key+"-sp").value.trim()};
+    if(o.ten||o.noi_dung){ S.picks[key]=o; any=true; }
+  });
+  if(!any){ err("e-4","Hãy chọn/nhập ít nhất một hoạt động."); return; }
+  $("plan-title").innerHTML=planMetaHTML();
+  $("plan-doc").innerHTML=buildPlanBody();
+  $("s-title").value=(S.intake.bai||"Giáo án")+" — "+(S.intake.lop||"");
+  $("s-keys").value=[S.intake.mon,S.intake.lop,S.intake.bai].filter(Boolean).join(", ");
+  goStep(5);
+}
+
+/* ===== BƯỚC 5: dựng & xuất ===== */
+function liList(text){ return (text||"").split("\n").filter(x=>x.trim()).map(x=>"<li>"+esc(x.replace(/^[-•]\s*/,""))+"</li>").join(""); }
+function ul(text){ const x=liList(text); return x?("<ul>"+x+"</ul>"):"<p>"+esc(text||"")+"</p>"; }
+function planMetaHTML(){
+  const d=S.intake;
+  return "<h3>GIÁO ÁN: "+esc(d.bai)+"</h3><p style='text-align:center'><b>Môn:</b> "+esc(d.mon)+" · <b>Lớp:</b> "+esc(d.lop)+" · <b>Thời lượng:</b> "+esc(d.tiet)+"</p>";
+}
+function rubricRows(){ const a=S.rubric; if(!a||!a.rubric||!a.rubric.length)return "";
+  return '<div class="scroll"><table class="rubric-tb"><thead><tr><th>Tiêu chí</th>'+BLOOM.map(b=>"<th>"+b[1]+"</th>").join("")+'</tr></thead><tbody>'
+    +a.rubric.map(r=>"<tr><td class=\"tc\">"+esc(r.tieu_chi)+"</td>"+BLOOM.map(b=>"<td>"+esc(r[b[0]])+"</td>").join("")+"</tr>").join("")+"</tbody></table></div>";
+}
+function buildPlanBody(){
+  const d=S.intake,o=S.obj;
+  let h="<h4>I. MỤC TIÊU</h4>";
+  h+="<p><b>1. Về kiến thức</b></p>"+ul(o.kt)+"<p><b>2. Về năng lực</b></p>"+ul(o.nl)+"<p><b>3. Về phẩm chất</b></p>"+ul(o.pc);
+  h+="<h4>II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h4>"+ul((d.thietbi&&d.thietbi.length?d.thietbi:["Theo điều kiện thực tế của lớp học"]).join("\n"));
+  h+="<h4>III. TIẾN TRÌNH DẠY HỌC</h4>";
+  PHASES.forEach(([key,name])=>{
+    const o2=S.picks[key]; if(!o2)return;
+    h+="<p style='margin-top:12px'><b>"+esc(name)+(o2.ten?": "+esc(o2.ten):"")+"</b></p>";
+    h+="<p><i>a) Mục tiêu:</i> "+esc(o2.muc_tieu||"")+"</p>";
+    h+="<p><i>b) Nội dung:</i> "+esc(o2.noi_dung||"")+"</p>";
+    h+="<p><i>c) Sản phẩm:</i> "+esc(o2.san_pham||"")+"</p>";
+    h+="<p><i>d) Tổ chức thực hiện:</i> "+esc(o2.to_chuc||"")+"</p>";
+  });
+  const a=S.rubric;
+  if(a&&((a.tieu_chi_thanh_cong&&a.tieu_chi_thanh_cong.length)||(a.rubric&&a.rubric.length))){
+    h+="<h4>IV. CÔNG CỤ ĐÁNH GIÁ</h4>";
+    if(a.tieu_chi_thanh_cong&&a.tieu_chi_thanh_cong.length) h+="<p><i>Tiêu chí thành công:</i></p><ul>"+a.tieu_chi_thanh_cong.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>";
+    h+=rubricRows();
+  }
+  return h;
+}
+function getDocBody(){ const el=$("plan-doc"); return (el&&el.innerHTML.trim())?el.innerHTML:buildPlanBody(); }
+function restoreDraft(){ if(confirm("Khôi phục bản ghép tự động? Mọi chỉnh sửa trực tiếp sẽ mất.")) $("plan-doc").innerHTML=buildPlanBody(); }
+
+function buildWordDoc(){
+  const d=S.intake,dots="…………………………";
+  const truong=($("s-truong").value.trim()||dots),to=($("s-to").value.trim()||dots);
+  const gv=($("s-gv").value.trim()||$("s-author").value.trim()||dots);
+  let b='<table class="hdr"><tr><td>TRƯỜNG: '+esc(truong).toUpperCase()+'<br>TỔ: '+esc(to).toUpperCase()+'</td>'
+    +'<td class="c">Họ và tên giáo viên:<br>'+esc(gv)+'</td></tr></table>';
+  b+='<h1>TÊN BÀI DẠY: '+esc(d.bai||"").toUpperCase()+'</h1>';
+  b+='<p class="c"><i>Môn học/Hoạt động giáo dục: '+esc(d.mon||"")+'; lớp: '+esc((d.lop||"").replace(/^Lớp\s*/i,""))+'</i></p>';
+  b+='<p class="c"><i>Thời gian thực hiện: '+esc(d.tiet||"")+'</i></p>';
+  b+=getDocBody();
+  const head='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">'
+    +'<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->'
+    +'<style>@page{size:21cm 29.7cm;margin:2cm 2cm 2cm 3cm}'
+    +'body{font-family:"Times New Roman",serif;font-size:13pt;line-height:1.4;color:#000}'
+    +'h1{font-size:14pt;font-weight:bold;text-align:center;text-transform:uppercase;margin:10pt 0 4pt}'
+    +'h3{font-size:13pt;font-weight:bold;margin:10pt 0 4pt;text-align:center}'
+    +'h4{font-size:13pt;font-weight:bold;margin:11pt 0 4pt}'
+    +'p{margin:4pt 0;text-align:justify}.c{text-align:center}ul{margin:4pt 0}li{margin:2pt 0}'
+    +'table.hdr{width:100%;border-collapse:collapse}table.hdr td{border:none;vertical-align:top;width:50%}table.hdr td.c{text-align:center}'
+    +'table.rubric-tb{border-collapse:collapse;width:100%;font-size:10.5pt}table.rubric-tb th,table.rubric-tb td{border:1px solid #000;padding:3pt;text-align:left;vertical-align:top}'
+    +'</style></head><body>';
+  return head+b+'</body></html>';
+}
+function downloadPlan(){
+  const blob=new Blob(['\ufeff'+buildWordDoc()],{type:"application/msword"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=((S.intake.bai||"giao-an").replace(/\s+/g,"_"))+".doc"; document.body.appendChild(a); a.click(); a.remove();
+}
+function saveLocal(){
+  clearErr("e-5");
+  const title=$("s-title").value.trim();
+  if(!title){ err("e-5","Hãy nhập tiêu đề giáo án."); return; }
+  const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title,
+    mon:S.intake.mon,lop:S.intake.lop,author:($("s-author").value.trim()||"—"),
+    keywords:$("s-keys").value.trim(),html:planMetaHTML()+getDocBody(),createdAt:Date.now()};
+  Store.save(item);
+  err("e-5", useLS ? "✓ Đã lưu vào thư viện trên máy này." : "✓ Đã lưu tạm (phiên này). Mở ngoài Claude để lưu vĩnh viễn trên máy.", true);
+}
+function resetAll(){
+  ["i-mon","i-bai","i-yccd","o-kt","o-nl","o-pc","s-title","s-author","s-keys","s-truong","s-to","s-gv","r-success"].forEach(id=>$(id).value="");
+  $("r-body").innerHTML=""; $("tech-blocks").innerHTML=""; $("plan-doc").innerHTML=""; $("plan-title").innerHTML=""; clearErr("e-5");
+  S.intake={};S.obj={};S.picks={};S.rubric=null;
+  goStep(1); setView("create");
+}
+
+/* ===== thư viện ===== */
+let LIB=[];
+function loadLib(){ $("lib-detail").style.display="none"; LIB=Store.all(); renderLib(LIB); }
+function runSearch(){
+  const q=$("lib-q").value.trim().toLowerCase();
+  renderLib(q?LIB.filter(it=>((it.title||"")+" "+(it.mon||"")+" "+(it.lop||"")+" "+(it.keywords||"")+" "+(it.html||"")).toLowerCase().includes(q)):LIB);
+}
+function renderLib(arr){
+  $("lib-detail").style.display="none";
+  const list=$("lib-list");
+  if(!arr.length){ list.innerHTML='<div class="empty">'+($("lib-q").value.trim()?"Không có giáo án khớp từ khóa.":"Chưa có giáo án nào trên máy này.")+'</div>'; return; }
+  list.innerHTML=arr.map(it=>'<div class="lib-item"><div><div class="li-t" onclick="openItem(\''+it.id+'\')">'+esc(it.title)+'</div><div class="li-m">'+esc([it.mon,it.lop,(it.author&&it.author!=="—"?"· "+it.author:"")].filter(Boolean).join(" "))+(it.createdAt?' · '+new Date(it.createdAt).toLocaleDateString("vi-VN"):"")+'</div></div><button class="lib-x" onclick="delItem(\''+it.id+'\')">Xóa</button></div>').join("");
+}
+function openItem(id){
+  const it=LIB.find(x=>x.id===id); if(!it)return;
+  const d=$("lib-detail");
+  d.innerHTML='<button class="act ghost" type="button" onclick="document.getElementById(\'lib-detail\').style.display=\'none\'" style="margin-bottom:14px">← Quay lại danh sách</button><div class="gh-doc">'+it.html+'</div>';
+  d.style.display="block"; window.scrollTo({top:0,behavior:"smooth"});
+}
+function delItem(id){ if(confirm("Xóa giáo án này khỏi thư viện trên máy?")){ Store.remove(id); loadLib(); } }
+function exportLib(){
+  const blob=new Blob([JSON.stringify(Store.all(),null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="thu-vien-giao-an.json"; document.body.appendChild(a); a.click(); a.remove();
+}
+function importLib(ev){
+  const f=ev.target.files&&ev.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ const arr=JSON.parse(rd.result); if(!Array.isArray(arr))throw 0;
+    const cur=Store.all(); const ids=new Set(cur.map(x=>x.id));
+    arr.forEach(x=>{ if(x&&x.id&&!ids.has(x.id)){ cur.push(x); ids.add(x.id); } });
+    cur.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); Store.write(cur); loadLib();
+    alert("Đã khôi phục "+arr.length+" mục (gộp với thư viện hiện có).");
+  }catch(e){ alert("File JSON không hợp lệ."); } };
+  rd.readAsText(f); ev.target.value="";
+}
+
+renderObjHelpers();
+</script>
+</body>
+</html>
