@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roboki EduSAFE · Đánh giá mức độ trưởng thành ứng dụng AI an toàn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-950:#081527;
+  --navy-900:#0B1D36;
+  --navy-800:#12294A;
+  --navy-700:#1B3A63;
+  --ink:#1B2B44;
+  --ink-soft:#4A5B75;
+  --paper:#F5F7FA;
+  --card:#FFFFFF;
+  --line:#DDE4EE;
+  --orange:#F7941D;
+  --orange-deep:#D97A08;
+  --cyan:#2BB3D4;
+  --teal:#2BAE8E;
+  --red:#D65745;
+  --radius:14px;
+  --font-display:'Lora',Georgia,serif;
+  --font-body:'Be Vietnam Pro',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);line-height:1.55;font-size:15.5px}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:inherit}
+:focus-visible{outline:2.5px solid var(--cyan);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- header ---------- */
+.masthead{background:var(--navy-900);color:#fff;padding:26px 0 30px;border-bottom:4px solid var(--orange)}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+.brandline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.logo{font-family:var(--font-mono);font-weight:600;font-size:19px;letter-spacing:.5px;color:var(--orange)}
+.logo span{color:#fff}
+.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan)}
+.masthead h1{font-family:var(--font-display);font-weight:600;font-size:clamp(23px,3.4vw,32px);margin-top:10px;line-height:1.25}
+.masthead p.sub{color:#AFC2DC;margin-top:8px;max-width:640px;font-size:14.5px}
+.lawchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.lawchip{font-family:var(--font-mono);font-size:11px;padding:4px 10px;border:1px solid rgba(255,255,255,.25);border-radius:99px;color:#C8D6EA}
+
+/* ---------- stepper rail ---------- */
+.rail{display:flex;gap:0;margin:26px 0 8px;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--card)}
+.rail div{flex:1;text-align:center;padding:9px 4px;font-family:var(--font-mono);font-size:11.5px;letter-spacing:.5px;color:var(--ink-soft);border-right:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail div:last-child{border-right:none}
+.rail div.on{background:var(--navy-900);color:var(--orange);font-weight:600}
+.rail div.done{background:#EAF6F1;color:var(--teal)}
+
+/* ---------- panels ---------- */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px;margin:18px 0}
+.panel h2{font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:6px}
+.panel .lede{color:var(--ink-soft);font-size:14.5px;margin-bottom:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.field label{display:block;font-weight:600;font-size:13.5px;margin-bottom:6px}
+.field .hint{font-weight:400;color:var(--ink-soft);font-size:12px;margin-top:5px}
+.field input,.field select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;background:#FBFCFE;color:var(--ink)}
+.field input:focus,.field select:focus{border-color:var(--cyan);outline:none}
+.keybox{background:#FFF8EE;border:1.5px dashed var(--orange);border-radius:var(--radius);padding:20px;margin-top:20px}
+.keybox h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.keybox .k{font-family:var(--font-mono);font-size:12px;background:var(--navy-900);color:var(--orange);padding:2px 8px;border-radius:6px}
+.keyrow{display:flex;gap:10px;flex-wrap:wrap}
+.keyrow input{flex:1;min-width:220px;padding:11px 13px;border:1.5px solid #EAD3AE;border-radius:9px;font-family:var(--font-mono);font-size:13px}
+.keyrow select{padding:11px 13px;border:1.5px solid #EAD3AE;border-radius:9px;background:#fff}
+.keynote{font-size:12px;color:#8A6A33;margin-top:10px}
+
+/* ---------- intro page ---------- */
+.introgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+@media(max-width:760px){.introgrid{grid-template-columns:1fr}}
+.whycard{border:1.5px solid var(--line);border-radius:12px;padding:22px;background:#FDFDFE}
+.whycard.get{background:#F2FAF7;border-color:#BFE3D5}
+.whycard h3{font-size:15.5px;margin-bottom:12px;font-family:var(--font-display);font-weight:600}
+.whycard ul{margin-left:18px;font-size:13.5px}
+.whycard li{margin:9px 0}
+.lawpanel{margin-top:22px;border:1.5px solid var(--line);border-radius:12px;padding:22px;background:#FDFDFE}
+.lawpanel h3{font-size:15.5px;font-family:var(--font-display);font-weight:600;margin-bottom:8px}
+.lawlinks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:760px){.lawlinks{grid-template-columns:1fr}}
+.lawlinks a{display:block;text-decoration:none;color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff;transition:border-color .12s,transform .12s}
+.lawlinks a:hover{border-color:var(--orange);transform:translateY(-1px)}
+.lawlinks a b{display:block;font-size:13.5px;margin:3px 0 2px}
+.lawno{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.5px;color:var(--orange-deep);background:#FFF3E0;padding:2px 7px;border-radius:5px}
+.laweff{display:block;font-size:11.5px;color:var(--ink-soft)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:10px;padding:12px 22px;font-weight:600;font-size:14.5px;transition:transform .12s ease,box-shadow .12s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--orange);color:var(--navy-950);box-shadow:0 3px 10px rgba(247,148,29,.35)}
+.btn-navy{background:var(--navy-900);color:#fff}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+
+/* ---------- assessment ---------- */
+.domainhead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.domaintag{font-family:var(--font-mono);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+.domainlaw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);padding:5px 11px;border-radius:99px;white-space:nowrap}
+.progressbar{height:6px;background:var(--line);border-radius:99px;margin:16px 0 24px;overflow:hidden}
+.progressbar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--teal));border-radius:99px;transition:width .3s ease}
+.qcard{border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;background:#FDFDFE}
+.qcard h4{font-size:15px;margin-bottom:14px;display:flex;gap:10px}
+.qnum{font-family:var(--font-mono);color:var(--orange-deep);font-weight:600;flex-shrink:0}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:11px;align-items:flex-start;border:1.5px solid var(--line);border-radius:9px;padding:11px 13px;background:#fff;cursor:pointer;font-size:13.5px;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--cyan)}
+.opt input{margin-top:3px;accent-color:var(--orange-deep);flex-shrink:0}
+.opt.sel{border-color:var(--orange);background:#FFF8EE}
+.opt .lvl{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);display:block;margin-bottom:2px;letter-spacing:1px}
+
+/* ---------- results ---------- */
+.scorehero{background:var(--navy-900);color:#fff;border-radius:var(--radius);padding:34px 30px;display:grid;grid-template-columns:auto 1fr;gap:34px;align-items:center;margin:18px 0}
+@media(max-width:700px){.scorehero{grid-template-columns:1fr;text-align:center}}
+.scorenum{font-family:var(--font-display);font-size:74px;font-weight:700;line-height:1;color:var(--orange)}
+.scorenum small{font-size:24px;color:#7E93B4;font-weight:500}
+.maturityname{font-family:var(--font-display);font-size:25px;font-weight:600;margin-bottom:6px}
+.scorehero p{color:#AFC2DC;font-size:14px;max-width:520px}
+.ladder{display:flex;gap:5px;margin-top:16px}
+.ladder span{flex:1;height:9px;border-radius:99px;background:rgba(255,255,255,.14)}
+.ladder span.lit{background:var(--orange)}
+.resgrid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+@media(max-width:820px){.resgrid{grid-template-columns:1fr}}
+.dbar{margin-bottom:15px}
+.dbar .lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.dbar .lbl b{font-weight:600}
+.dbar .lbl .v{font-family:var(--font-mono);color:var(--ink-soft)}
+.dbar .track{height:9px;background:var(--paper);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.dbar .fill{height:100%;border-radius:99px}
+.gaplist{margin-top:8px}
+.gapitem{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.gapitem:last-child{border-bottom:none}
+.gapdot{width:9px;height:9px;border-radius:50%;background:var(--red);margin-top:6px;flex-shrink:0}
+.tierreco{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:14px}
+.tiercard{border:1.5px solid var(--line);border-radius:11px;padding:15px;font-size:13px;background:#fff}
+.tiercard.hot{border-color:var(--orange);background:#FFF8EE}
+.tiercard .tname{font-family:var(--font-mono);font-size:11px;letter-spacing:1.5px;color:var(--cyan);text-transform:uppercase}
+.tiercard b{display:block;margin:4px 0 5px;font-size:14.5px}
+
+/* ---------- AI report ---------- */
+.reportbox{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:var(--radius);padding:34px;margin-top:18px}
+.reportbox h2{font-family:var(--font-display)}
+#reportBody h2{font-family:var(--font-display);font-size:20px;margin:26px 0 10px;padding-bottom:6px;border-bottom:1.5px solid var(--line)}
+#reportBody h3{font-size:15.5px;margin:18px 0 7px;color:var(--navy-800)}
+#reportBody p{margin:9px 0;font-size:14.5px}
+#reportBody ul,#reportBody ol{margin:9px 0 9px 22px;font-size:14.5px}
+#reportBody li{margin:5px 0}
+#reportBody strong{color:var(--navy-800)}
+.spin{display:inline-block;width:17px;height:17px;border:2.5px solid rgba(11,29,54,.25);border-top-color:var(--navy-950);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.errbox{background:#FCEEEB;border:1.5px solid var(--red);border-radius:10px;padding:14px 16px;color:#8C3327;font-size:13.5px;margin-top:14px}
+.hidden{display:none!important}
+footer{padding:34px 0 44px;color:var(--ink-soft);font-size:12.5px;text-align:center}
+footer .m{font-family:var(--font-mono)}
+
+/* ---------- print ---------- */
+@media print{
+  body{background:#fff;font-size:12.5px}
+  .masthead{border-bottom:3px solid var(--orange);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .rail,.actions,.keybox,.no-print,footer .noprint{display:none!important}
+  .panel,.reportbox,.scorehero{border:none;box-shadow:none;padding:12px 0;page-break-inside:avoid}
+  .scorehero{background:var(--navy-900)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:24px}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brandline">
+      <div class="logo">ROBOKI<span> · EduSAFE</span></div>
+      <div class="eyebrow">Lớp 1 · Assess — Bản thử nghiệm</div>
+    </div>
+    <h1>Đánh giá mức độ trưởng thành<br>ứng dụng AI an toàn trong giáo dục</h1>
+    <p class="sub">Bộ công cụ tự đánh giá dành cho trường học và cơ quan quản lý giáo dục — chấm điểm theo 6 miền, đối chiếu khung pháp lý Việt Nam, và sinh báo cáo phân tích bằng AI.</p>
+    <div class="lawchips">
+      <span class="lawchip">Luật AI 134/2025/QH15</span>
+      <span class="lawchip">Luật BVDLCN 91/2025/QH15</span>
+      <span class="lawchip">Luật Dữ liệu 60/2024/QH15</span>
+      <span class="lawchip">Luật ANM 2018</span>
+      <span class="lawchip">TT 18/2026/TT-BGDĐT</span>
+      <span class="lawchip">ISO/IEC 42001 · NIST AI RMF</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="rail" id="rail">
+    <div class="on">1 · Giới thiệu</div>
+    <div>2 · Thông tin</div>
+    <div>3 · Đánh giá</div>
+    <div>4 · Kết quả</div>
+    <div>5 · Báo cáo AI</div>
+  </div>
+
+  <!-- ============ STEP 0: INTRO ============ -->
+  <section id="stepIntro" class="panel">
+    <h2>Công cụ này là gì?</h2>
+    <p class="lede" style="max-width:760px">EduSAFE là bộ công cụ <b>tự đánh giá mức độ trưởng thành ứng dụng AI an toàn</b> dành cho trường học và cơ quan quản lý giáo dục. Bạn trả lời 24 câu hỏi về thực trạng của đơn vị mình (khoảng 10–15 phút), công cụ chấm điểm theo 6 miền, đối chiếu với khung pháp lý Việt Nam, và sinh báo cáo phân tích kèm lộ trình khắc phục. Không cần cài đặt, không cần tài khoản — mọi câu trả lời chỉ nằm trong trình duyệt của bạn.</p>
+
+    <div class="introgrid">
+      <div class="whycard">
+        <h3>❓ Vì sao giáo viên và nhà trường cần đánh giá?</h3>
+        <ul>
+          <li><b>Pháp luật về AI và dữ liệu đã có hiệu lực.</b> Luật Trí tuệ nhân tạo (từ 01/3/2026), Luật Bảo vệ dữ liệu cá nhân (từ 01/01/2026) và Luật Dữ liệu (từ 01/7/2025) đặt ra nghĩa vụ cụ thể cho mọi cơ quan, trường học khi dùng AI và xử lý dữ liệu học sinh, giáo viên.</li>
+          <li><b>Bộ GD&amp;ĐT yêu cầu năng lực số có chuẩn.</b> Thông tư 18/2026/TT-BGDĐT ban hành Khung năng lực số — trong đó AI là một miền năng lực riêng — làm căn cứ để giáo viên <i>tự đánh giá</i> và xác định nhu cầu bồi dưỡng.</li>
+          <li><b>Rủi ro đang diễn ra âm thầm.</b> Nhiều giáo viên dán đề thi, điểm số, hồ sơ học sinh vào các công cụ AI công cộng mà không biết dữ liệu đi đâu — đơn vị chịu trách nhiệm pháp lý nhưng không nhìn thấy rủi ro này.</li>
+          <li><b>Không đo được thì không quản được.</b> Muốn lập kế hoạch, xin ngân sách hay giải trình với cấp trên, cần một bức tranh hiện trạng có điểm số và căn cứ.</li>
+        </ul>
+      </div>
+      <div class="whycard get">
+        <h3>🎁 Hoàn thành đánh giá, bạn nhận được gì?</h3>
+        <ul>
+          <li><b>Điểm trưởng thành tổng thể</b> trên thang 100 và xếp hạng 5 mức — biết đơn vị mình đang đứng ở đâu.</li>
+          <li><b>Hồ sơ 6 miền</b> (biểu đồ radar + điểm từng miền): quản trị, dữ liệu, kỹ thuật, pháp lý, con người, mức độ ứng dụng.</li>
+          <li><b>Danh sách khoảng trống ưu tiên</b> — những việc cần làm trước, kèm căn cứ pháp lý liên quan.</li>
+          <li><b>Báo cáo phân tích bằng AI</b>: lộ trình khắc phục 6–12 tháng chia 3 giai đoạn, đề xuất mô hình triển khai AI phù hợp cho từng loại công việc, và khuyến nghị đào tạo theo Thông tư 18.</li>
+          <li><b>Bản in / PDF</b> để trình Ban Giám hiệu, Sở GD&amp;ĐT hoặc lưu hồ sơ đơn vị.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="lawpanel">
+      <h3>📚 Căn cứ pháp lý của bộ tiêu chí</h3>
+      <p class="lede" style="margin-bottom:12px">Bấm vào từng văn bản để đọc toàn văn trên Thư Viện Pháp Luật (mở tab mới):</p>
+      <div class="lawlinks">
+        <a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Luat-Tri-tue-nhan-tao-2025-so-134-2025-QH15-679013.aspx" target="_blank" rel="noopener">
+          <span class="lawno">134/2025/QH15</span><b>Luật Trí tuệ nhân tạo 2025</b><span class="laweff">Hiệu lực 01/3/2026 · Quản lý AI theo mức độ rủi ro, con người quyết định cuối</span></a>
+        <a href="https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Luat-Bao-ve-du-lieu-ca-nhan-2025-so-91-2025-QH15-625628.aspx" target="_blank" rel="noopener">
+          <span class="lawno">91/2025/QH15</span><b>Luật Bảo vệ dữ liệu cá nhân 2025</b><span class="laweff">Hiệu lực 01/01/2026 · Dữ liệu học sinh, giáo viên; quyền đồng ý, truy cập, xóa</span></a>
+        <a href="https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Luat-Du-lieu-2024-so-60-2024-QH15-621343.aspx" target="_blank" rel="noopener">
+          <span class="lawno">60/2024/QH15</span><b>Luật Dữ liệu 2024</b><span class="laweff">Hiệu lực 01/7/2025 · Dữ liệu là tài nguyên quốc gia; kiểm soát chuyển dữ liệu ra nước ngoài</span></a>
+        <a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Luat-Cong-nghiep-cong-nghe-so-2025-so-71-2025-QH15-621341.aspx" target="_blank" rel="noopener">
+          <span class="lawno">71/2025/QH15</span><b>Luật Công nghiệp công nghệ số 2025</b><span class="laweff">Hiệu lực 01/01/2026 · Dấu hiệu nhận dạng nội dung AI; ưu tiên sản phẩm trong nước</span></a>
+        <a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Luat-an-ninh-mang-2018-351416.aspx" target="_blank" rel="noopener">
+          <span class="lawno">24/2018/QH14</span><b>Luật An ninh mạng 2018</b><span class="laweff">Hiệu lực 01/01/2019 · Điều 26: dữ liệu người dùng Việt Nam lưu trữ trong nước</span></a>
+        <a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Thong-tu-18-2026-TT-BGDDT-Khung-nang-luc-so-doi-voi-giao-vien-co-so-giao-duc-mam-non-699666.aspx" target="_blank" rel="noopener">
+          <span class="lawno">18/2026/TT-BGDĐT</span><b>Khung năng lực số đối với giáo viên, CBQL</b><span class="laweff">Hiệu lực 12/5/2026 · 6 miền, 20 năng lực; AI là miền năng lực riêng; căn cứ tự đánh giá &amp; bồi dưỡng</span></a>
+      </div>
+      <p class="keynote" style="margin-top:12px;color:var(--ink-soft)">Bộ tiêu chí còn tham chiếu chuẩn quốc tế ISO/IEC 42001 (hệ thống quản lý AI) và NIST AI Risk Management Framework. Kết quả mang tính tham khảo, không thay thế đánh giá tuân thủ chính thức.</p>
+    </div>
+
+    <div class="actions">
+      <span></span>
+      <button class="btn btn-primary" onclick="goSetup()">Bắt đầu · Nhập thông tin đơn vị →</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 1: SETUP ============ -->
+  <section id="stepSetup" class="panel hidden">
+    <h2>Thông tin đơn vị</h2>
+    <p class="lede">Thông tin này dùng để cá nhân hóa báo cáo. Mọi dữ liệu chỉ nằm trong trình duyệt của bạn trong phiên làm việc.</p>
+    <div class="grid2">
+      <div class="field">
+        <label for="orgName">Tên đơn vị</label>
+        <input id="orgName" type="text" placeholder="VD: Trường THPT Nguyễn Du, Q.10, TP.HCM">
+      </div>
+      <div class="field">
+        <label for="orgType">Loại hình</label>
+        <select id="orgType">
+          <option>Trường phổ thông (tiểu học / THCS / THPT)</option>
+          <option>Trường đại học / cao đẳng</option>
+          <option>Sở / Phòng Giáo dục và Đào tạo</option>
+          <option>Cơ quan nhà nước khác</option>
+          <option>Trung tâm / cơ sở giáo dục tư thục</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="orgSize">Quy mô nhân sự (GV + CBQL)</label>
+        <select id="orgSize">
+          <option>Dưới 50 người</option>
+          <option>50 – 150 người</option>
+          <option>150 – 500 người</option>
+          <option>Trên 500 người</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="assessor">Người thực hiện đánh giá (tùy chọn)</label>
+        <input id="assessor" type="text" placeholder="VD: Nguyễn Văn A — Phó Hiệu trưởng">
+      </div>
+    </div>
+
+    <div class="keybox">
+      <h3>🔑 Kết nối Gemini API để sinh báo cáo</h3>
+      <div class="keyrow">
+        <input id="apiKey" type="password" placeholder="Dán Gemini API key vào đây (AIza...)" autocomplete="off">
+        <select id="modelSel">
+          <option value="gemini-2.5-flash">gemini-2.5-flash (khuyến nghị)</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro (chi tiết hơn, chậm hơn)</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+        </select>
+      </div>
+      <p class="keynote">Key chỉ được giữ trong bộ nhớ phiên của trình duyệt, <b>không lưu trữ, không gửi đến máy chủ nào khác</b> ngoài lời gọi trực tiếp từ trình duyệt của bạn đến <span class="k">generativelanguage.googleapis.com</span>. Lấy key miễn phí tại Google AI Studio. Có thể bỏ trống — bạn vẫn nhận được kết quả chấm điểm, chỉ không có phần báo cáo AI.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="goIntro()">← Quay lại giới thiệu</button>
+      <button class="btn btn-primary" onclick="startAssessment()">Bắt đầu đánh giá →</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2: ASSESSMENT ============ -->
+  <section id="stepAssess" class="panel hidden">
+    <div class="domainhead">
+      <div>
+        <div class="domaintag" id="dTag"></div>
+        <h2 id="dName"></h2>
+      </div>
+      <div class="domainlaw" id="dLaw"></div>
+    </div>
+    <p class="lede" id="dDesc"></p>
+    <div class="progressbar"><i id="pFill" style="width:0%"></i></div>
+    <div id="qHost"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btnPrev" onclick="prevDomain()">← Quay lại</button>
+      <button class="btn btn-navy" id="btnNext" onclick="nextDomain()">Miền tiếp theo →</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 3: RESULTS ============ -->
+  <section id="stepResults" class="hidden">
+    <div class="scorehero">
+      <div>
+        <div class="scorenum"><span id="ovScore">0</span><small>/100</small></div>
+        <div class="ladder" id="ladder"></div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">Mức trưởng thành tổng thể</div>
+        <div class="maturityname" id="matName"></div>
+        <p id="matDesc"></p>
+      </div>
+    </div>
+
+    <div class="resgrid">
+      <div class="panel" style="margin:0">
+        <h2 style="font-size:17px">Hồ sơ 6 miền</h2>
+        <p class="lede" style="margin-bottom:14px">Biểu đồ radar theo miền đánh giá.</p>
+        <div id="radarHost"></div>
+      </div>
+      <div class="panel" style="margin:0">
+        <h2 style="font-size:17px">Điểm theo miền</h2>
+        <p class="lede" style="margin-bottom:14px">Miền dưới 50 điểm là khoảng trống ưu tiên.</p>
+        <div id="barsHost"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="font-size:17px">Khoảng trống ưu tiên</h2>
+      <p class="lede">Các hạng mục có điểm thấp nhất — nên đưa vào kế hoạch khắc phục trước.</p>
+      <div class="gaplist" id="gapHost"></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="font-size:17px">Đề xuất mô hình triển khai sơ bộ (4 tầng Roboki)</h2>
+      <p class="lede">Gợi ý tự động dựa trên hồ sơ dữ liệu và hạ tầng của đơn vị. Báo cáo AI sẽ diễn giải chi tiết hơn.</p>
+      <div class="tierreco" id="tierHost"></div>
+    </div>
+
+    <div class="actions no-print">
+      <button class="btn btn-ghost" onclick="backToAssess()">← Quay lại đánh giá</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-navy" onclick="window.print()">🖨 In / Lưu PDF</button>
+        <button class="btn btn-primary" id="btnGen" onclick="generateReport()">✦ Sinh báo cáo phân tích bằng Gemini</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STEP 4: AI REPORT ============ -->
+  <section id="stepReport" class="reportbox hidden">
+    <div class="eyebrow" style="margin-bottom:4px">Báo cáo phân tích · Sinh bởi Gemini</div>
+    <h2 id="reportTitle" style="margin-bottom:4px">Báo cáo đánh giá</h2>
+    <p class="lede" id="reportMeta"></p>
+    <div id="reportStatus"></div>
+    <div id="reportBody"></div>
+    <div class="actions no-print" id="reportActions" style="display:none">
+      <button class="btn btn-ghost" onclick="backToResults()">← Về trang kết quả</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="generateReport()">↻ Sinh lại</button>
+        <button class="btn btn-navy" onclick="window.print()">🖨 In / Lưu PDF báo cáo đầy đủ</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div>Roboki EduSAFE · Prototype Lớp 1 (Assess) · Khung đánh giá v0.1 — <span class="m">6 miền · 24 tiêu chí · thang trưởng thành 5 mức</span></div>
+  <div class="noprint" style="margin-top:5px">Kết quả mang tính tham khảo, không thay thế đánh giá tuân thủ chính thức hoặc tư vấn pháp lý.</div>
+</footer>
+
+<script>
+/* =====================================================
+   ASSESSMENT FRAMEWORK v0.1
+   6 domains x 4 questions, maturity levels 0..4
+===================================================== */
+const LEVEL_TAGS = ["MỨC 0 · CHƯA CÓ","MỨC 1 · TỰ PHÁT","MỨC 2 · HÌNH THÀNH","MỨC 3 · CHUẨN HÓA","MỨC 4 · TỐI ƯU"];
+
+const DOMAINS = [
+{
+ code:"GOV", name:"Quản trị & chính sách AI",
+ law:"Luật AI 134/2025 · ISO/IEC 42001",
+ desc:"Đơn vị có cơ chế quản trị, chính sách và phân công trách nhiệm rõ ràng cho việc sử dụng AI hay không.",
+ color:"#2BB3D4",
+ questions:[
+  {t:"Đơn vị đã có chính sách/quy định nội bộ về sử dụng AI chưa?",
+   o:["Chưa có bất kỳ quy định nào; ai muốn dùng gì thì dùng.",
+      "Có nhắc nhở miệng hoặc trao đổi không chính thức.",
+      "Có văn bản hướng dẫn sơ bộ nhưng chưa ban hành chính thức.",
+      "Đã ban hành chính sách sử dụng AI bằng văn bản, phổ biến toàn đơn vị.",
+      "Chính sách được rà soát, cập nhật định kỳ theo pháp luật và thực tiễn."]},
+  {t:"Trách nhiệm quản lý việc ứng dụng AI được phân công thế nào?",
+   o:["Không ai phụ trách.",
+      "Cán bộ CNTT kiêm nhiệm khi có việc phát sinh.",
+      "Có người được giao phụ trách nhưng chưa có mô tả nhiệm vụ rõ.",
+      "Có đầu mối/tổ phụ trách AI với nhiệm vụ, quyền hạn bằng văn bản.",
+      "Có cơ chế quản trị đầy đủ: đầu mối, quy trình báo cáo, gắn trách nhiệm lãnh đạo."]},
+  {t:"Quy trình xem xét, phê duyệt trước khi đưa một công cụ AI mới vào sử dụng?",
+   o:["Không có; giáo viên/cán bộ tự cài, tự dùng.",
+      "Chỉ hỏi ý kiến không chính thức khi có nghi ngại.",
+      "Có yêu cầu xin phép nhưng không có tiêu chí đánh giá.",
+      "Có quy trình phê duyệt với tiêu chí về bảo mật và pháp lý.",
+      "Quy trình phê duyệt kèm đánh giá rủi ro, thử nghiệm và rà soát định kỳ."]},
+  {t:"Việc nhận diện và quản lý rủi ro khi dùng AI (theo cách tiếp cận quản lý rủi ro của Luật AI)?",
+   o:["Chưa từng bàn đến rủi ro AI.",
+      "Có lo ngại chung nhưng chưa liệt kê rủi ro cụ thể.",
+      "Đã nhận diện một số rủi ro chính (lộ dữ liệu, sai lệch nội dung).",
+      "Có danh mục rủi ro AI và biện pháp giảm thiểu cho từng nhóm nghiệp vụ.",
+      "Rủi ro AI được phân loại theo mức độ, giám sát và cập nhật định kỳ."]}
+ ]
+},
+{
+ code:"DATA", name:"Quản lý dữ liệu & phân loại độ nhạy cảm",
+ law:"Luật Dữ liệu 60/2024 · Luật BVDLCN 91/2025",
+ desc:"Dữ liệu của đơn vị được phân loại, kiểm soát và bảo vệ ra sao khi tiếp xúc với công cụ AI.",
+ color:"#2BAE8E",
+ questions:[
+  {t:"Đơn vị có phân loại dữ liệu theo độ nhạy cảm (công khai / nội bộ / mật / tuyệt mật) không?",
+   o:["Chưa phân loại; mọi dữ liệu để lẫn nhau.",
+      "Phân biệt theo cảm tính của từng người.",
+      "Có phân loại sơ bộ cho một số loại tài liệu quan trọng (đề thi, hồ sơ).",
+      "Có quy định phân loại dữ liệu áp dụng toàn đơn vị.",
+      "Phân loại gắn với quy tắc xử lý cụ thể cho từng mức (được dùng AI nào, lưu ở đâu)."]},
+  {t:"Việc đưa dữ liệu đơn vị vào các công cụ AI đám mây nước ngoài (ChatGPT, Gemini bản công cộng…) được kiểm soát thế nào?",
+   o:["Không kiểm soát; nhiều người dán tài liệu nội bộ vào AI công cộng.",
+      "Có nhắc nhở nhưng không có quy định hay giám sát.",
+      "Có quy định cấm/hạn chế cho một số loại dữ liệu nhạy cảm.",
+      "Có quy định rõ loại dữ liệu nào được/không được đưa vào AI bên ngoài, có phổ biến.",
+      "Có biện pháp kỹ thuật (chặn, cảnh báo, che thông tin) kèm quy định và giám sát."]},
+  {t:"Dữ liệu cá nhân của học sinh, phụ huynh, giáo viên (điểm số, hồ sơ, sức khỏe…) được quản lý ra sao?",
+   o:["Chưa có biện pháp riêng cho dữ liệu cá nhân.",
+      "Bảo vệ theo thói quen, chưa đối chiếu quy định pháp luật.",
+      "Đã nhận diện các loại dữ liệu cá nhân nhạy cảm cần bảo vệ.",
+      "Có quy trình về thu thập, đồng ý, truy cập, chỉnh sửa, xóa dữ liệu cá nhân.",
+      "Tuân thủ đầy đủ theo Luật BVDLCN: hồ sơ xử lý, phân quyền, đánh giá tác động."]},
+  {t:"Đơn vị nắm được dữ liệu của mình đang được lưu trữ/xử lý ở đâu (trong nước hay nước ngoài) không?",
+   o:["Không rõ dữ liệu nằm ở đâu.",
+      "Biết một phần, chủ yếu với hệ thống do đơn vị tự quản.",
+      "Đã rà soát vị trí lưu trữ của các hệ thống chính.",
+      "Có danh mục hệ thống kèm vị trí lưu trữ, ưu tiên lưu trong nước.",
+      "Kiểm soát đầy đủ data residency; dữ liệu nhạy cảm bảo đảm không rời lãnh thổ/hệ thống nội bộ."]}
+ ]
+},
+{
+ code:"TECH", name:"Kiểm soát kỹ thuật & an toàn thông tin",
+ law:"Luật ANM 2018 · NIST AI RMF",
+ desc:"Các biện pháp kỹ thuật bảo vệ dữ liệu và hệ thống khi ứng dụng AI.",
+ color:"#F7941D",
+ questions:[
+  {t:"Kiểm soát truy cập và phân quyền (ai được xem/dùng dữ liệu nào) trong các hệ thống của đơn vị?",
+   o:["Dùng chung tài khoản hoặc không phân quyền.",
+      "Có tài khoản riêng nhưng quyền hạn gần như giống nhau.",
+      "Phân quyền cơ bản theo nhóm (giáo viên / quản lý).",
+      "Phân quyền theo vai trò (RBAC) cho các hệ thống và kho dữ liệu chính.",
+      "RBAC toàn diện, rà soát quyền định kỳ, nguyên tắc đặc quyền tối thiểu."]},
+  {t:"Nhật ký hoạt động (audit log) và khả năng truy vết khi có sự cố?",
+   o:["Không có nhật ký nào.",
+      "Chỉ có log mặc định của phần mềm, không ai xem.",
+      "Có ghi log các hệ thống quan trọng nhưng chưa quy trình rà soát.",
+      "Log tập trung cho hệ thống chính, có người phụ trách rà soát.",
+      "Log đầy đủ, không thể sửa xóa, có quy trình điều tra sự cố."]},
+  {t:"Biện pháp chống lộ lọt dữ liệu (DLP, che thông tin cá nhân) khi nhân sự làm việc với AI?",
+   o:["Chưa có biện pháp nào.",
+      "Chỉ dựa vào ý thức cá nhân.",
+      "Có hướng dẫn cách ẩn danh/che thông tin trước khi dùng AI.",
+      "Có công cụ hoặc quy trình che/redact thông tin nhạy cảm cho nghiệp vụ chính.",
+      "DLP và che PII tự động ở tầng hệ thống, áp dụng thống nhất."]},
+  {t:"Phương án xử lý dữ liệu tuyệt mật (đề thi, hồ sơ nhân sự, tài liệu mật) khi muốn dùng AI hỗ trợ?",
+   o:["Chưa nghĩ đến / hoặc đã có người dùng AI công cộng cho loại dữ liệu này.",
+      "Cấm hoàn toàn dùng AI với dữ liệu mật, không có giải pháp thay thế.",
+      "Đang tìm hiểu giải pháp AI cục bộ/offline cho dữ liệu mật.",
+      "Có giải pháp AI chạy cục bộ hoặc cách ly cho một số nghiệp vụ mật.",
+      "Có quy trình chuẩn: AI cách ly vật lý/air-gap, không để lại dấu vết, được kiểm định."]}
+ ]
+},
+{
+ code:"LEGAL", name:"Tuân thủ pháp lý & trách nhiệm giải trình",
+ law:"Luật AI 134/2025 · Luật CNCNS 71/2025",
+ desc:"Mức độ sẵn sàng của đơn vị trước các nghĩa vụ pháp lý mới về AI và dữ liệu.",
+ color:"#7A6BD8",
+ questions:[
+  {t:"Đơn vị cập nhật và rà soát các yêu cầu pháp lý liên quan (Luật AI, Luật BVDLCN, Luật Dữ liệu…) đến mức nào?",
+   o:["Chưa biết đến các luật này.",
+      "Có nghe nói nhưng chưa tìm hiểu nội dung.",
+      "Đã tìm hiểu các yêu cầu chính ảnh hưởng đến đơn vị.",
+      "Đã rà soát đối chiếu hoạt động của đơn vị với các yêu cầu pháp lý.",
+      "Có kế hoạch tuân thủ cụ thể, phân công và theo dõi tiến độ."]},
+  {t:"Nội dung do AI tạo ra (văn bản, hình ảnh, slide…) có được nhận diện/ghi chú theo quy định về dấu hiệu nhận dạng nội dung AI không?",
+   o:["Không phân biệt nội dung AI hay con người tạo.",
+      "Tùy từng người tự ghi chú.",
+      "Có khuyến khích ghi rõ khi nội dung do AI hỗ trợ tạo.",
+      "Có quy định nội bộ về ghi nhãn nội dung AI cho tài liệu chính thức.",
+      "Ghi nhãn nhất quán, có kiểm tra, phù hợp Luật Công nghiệp công nghệ số."]},
+  {t:"Nguyên tắc \"con người quyết định cuối cùng\" khi dùng AI trong nghiệp vụ (chấm, nhận xét, ra quyết định)?",
+   o:["Có trường hợp dùng kết quả AI trực tiếp không kiểm tra.",
+      "Đa số có xem lại nhưng không bắt buộc.",
+      "Có nhắc nhở phải kiểm tra kết quả AI trước khi dùng.",
+      "Quy định rõ AI chỉ hỗ trợ, con người chịu trách nhiệm phê duyệt cuối.",
+      "Quy trình phê duyệt được thiết kế trong nghiệp vụ, có lưu vết người quyết định."]},
+  {t:"Nếu bị thanh tra/kiểm tra về sử dụng AI và dữ liệu, đơn vị có hồ sơ giải trình không?",
+   o:["Hoàn toàn không có gì để trình.",
+      "Chỉ giải trình miệng được.",
+      "Có một số văn bản rời rạc liên quan.",
+      "Có bộ hồ sơ cơ bản: chính sách, danh mục hệ thống, phân công.",
+      "Hồ sơ tuân thủ đầy đủ, cập nhật, sẵn sàng giải trình bất kỳ lúc nào."]}
+ ]
+},
+{
+ code:"HUMAN", name:"Năng lực đội ngũ & đào tạo",
+ law:"Thông tư 18/2026/TT-BGDĐT",
+ desc:"Năng lực số và năng lực AI của giáo viên, cán bộ theo Khung năng lực số của Bộ GD&ĐT.",
+ color:"#D65745",
+ questions:[
+  {t:"Đội ngũ đã được đào tạo/bồi dưỡng về sử dụng AI theo Khung năng lực số (TT 18/2026) chưa?",
+   o:["Chưa có hoạt động đào tạo nào về AI.",
+      "Một vài cá nhân tự học.",
+      "Đã tổ chức giới thiệu/tập huấn sơ bộ về AI.",
+      "Có kế hoạch bồi dưỡng gắn với Khung năng lực số, đã triển khai một phần.",
+      "Bồi dưỡng bài bản theo lộ trình, có đánh giá đầu ra theo khung năng lực."]},
+  {t:"Nhận thức của đội ngũ về rủi ro khi dùng AI (lộ dữ liệu, thông tin sai — \"ảo giác\", deepfake, lừa đảo)?",
+   o:["Hầu như chưa ai nhận thức được rủi ro.",
+      "Một số người có cảnh giác riêng.",
+      "Đã có buổi phổ biến về rủi ro AI.",
+      "Đa số nắm được các rủi ro chính và cách phòng tránh cơ bản.",
+      "Nhận thức rủi ro được duy trì qua truyền thông nội bộ, diễn tập, cập nhật thường xuyên."]},
+  {t:"Đơn vị có đánh giá năng lực số/AI của đội ngũ định kỳ không?",
+   o:["Chưa từng đánh giá.",
+      "Chỉ ước lượng cảm tính.",
+      "Đã khảo sát sơ bộ một lần.",
+      "Có đánh giá theo tiêu chí, dùng kết quả để lập kế hoạch bồi dưỡng.",
+      "Đánh giá định kỳ theo Khung năng lực số, theo dõi tiến bộ từng cá nhân."]},
+  {t:"Có hướng dẫn, kênh hỗ trợ nội bộ khi giáo viên/cán bộ gặp vướng mắc lúc dùng AI không?",
+   o:["Không có; ai vướng tự xoay xở.",
+      "Hỏi nhau không chính thức.",
+      "Có nhóm trao đổi chung (Zalo/Teams) về công nghệ.",
+      "Có đầu mối hỗ trợ và tài liệu hướng dẫn nội bộ về AI.",
+      "Hệ sinh thái hỗ trợ đầy đủ: hướng dẫn, đầu mối, chia sẻ kinh nghiệm định kỳ."]}
+ ]
+},
+{
+ code:"USE", name:"Mức độ ứng dụng AI trong nghiệp vụ",
+ law:"Khảo sát hiện trạng · Hiệu quả sử dụng",
+ desc:"AI thực sự được dùng đến đâu trong công việc chuyên môn hằng ngày và có được đo lường không.",
+ color:"#3E7BD6",
+ questions:[
+  {t:"Mức độ ứng dụng AI trong công việc chuyên môn (soạn giáo án, ra đề, nhận xét, soạn văn bản…)?",
+   o:["Hầu như chưa ai dùng AI cho công việc.",
+      "Một số ít cá nhân dùng lẻ tẻ.",
+      "Khoảng một nửa đội ngũ dùng AI cho một số việc.",
+      "Đa số dùng AI thường xuyên cho các nghiệp vụ chính.",
+      "AI được tích hợp vào quy trình nghiệp vụ chuẩn của đơn vị."]},
+  {t:"Công cụ AI mà đội ngũ đang dùng do đơn vị cung cấp chính thức hay tự phát (\"shadow AI\")?",
+   o:["Không rõ ai đang dùng công cụ gì.",
+      "Hoàn toàn tự phát, mỗi người một công cụ, tài khoản cá nhân.",
+      "Đơn vị nắm được danh sách công cụ phổ biến đang dùng.",
+      "Đơn vị cung cấp/khuyến nghị công cụ chính thức cho phần lớn nhu cầu.",
+      "Toàn bộ nghiệp vụ dùng công cụ do đơn vị quản lý, kiểm soát truy cập."]},
+  {t:"Hiệu quả của việc ứng dụng AI có được đo lường không (thời gian tiết kiệm, chất lượng, mức hài lòng)?",
+   o:["Không đo lường gì.",
+      "Chỉ có cảm nhận chung là \"có ích\".",
+      "Có ghi nhận phản hồi không chính thức.",
+      "Có khảo sát/chỉ số cơ bản về hiệu quả sử dụng.",
+      "Đo lường định kỳ với chỉ số rõ ràng, dùng kết quả để điều chỉnh."]},
+  {t:"AI có được kết nối với kho tri thức nội bộ (quy chế, công văn, tài liệu phòng ban) để tra cứu — hay chỉ dùng kiến thức chung?",
+   o:["Chưa dùng AI để tra cứu tài liệu nội bộ.",
+      "Thi thoảng dán từng đoạn tài liệu vào AI để hỏi.",
+      "Đã thử nghiệm giải pháp hỏi–đáp trên tài liệu nội bộ.",
+      "Có hệ thống tra cứu nội bộ bằng AI (RAG) cho một số phòng ban.",
+      "Kho tri thức nội bộ kết nối AI đầy đủ, phân quyền theo phòng ban."]}
+ ]
+}
+];
+
+const MATURITY = [
+ {min:0,  name:"Mức 1 · Khởi đầu",  desc:"Việc ứng dụng AI hoàn toàn tự phát, chưa có quản trị, dữ liệu nhạy cảm đang ở mức rủi ro cao. Ưu tiên: ban hành quy định cơ bản và chặn ngay các hành vi rủi ro nhất."},
+ {min:21, name:"Mức 2 · Hình thành", desc:"Đã có nhận thức và một số biện pháp rời rạc, nhưng chưa thành hệ thống. Ưu tiên: phân loại dữ liệu, ban hành chính sách AI và đào tạo nhận thức toàn đơn vị."},
+ {min:41, name:"Mức 3 · Chuẩn hóa", desc:"Chính sách và kiểm soát cơ bản đã có, đang áp dụng chưa đồng đều. Ưu tiên: chuẩn hóa quy trình, bổ sung kiểm soát kỹ thuật và hồ sơ tuân thủ."},
+ {min:61, name:"Mức 4 · Quản lý",   desc:"Hệ thống quản trị AI vận hành ổn định, có đo lường. Ưu tiên: tự động hóa kiểm soát, xử lý các miền còn yếu và chuẩn bị cho thanh tra/kiểm định."},
+ {min:81, name:"Mức 5 · Tối ưu",    desc:"Đơn vị thuộc nhóm dẫn đầu về ứng dụng AI an toàn. Ưu tiên: duy trì, chia sẻ mô hình mẫu và cải tiến liên tục theo thay đổi pháp lý."}
+];
+
+/* ============ STATE ============ */
+let answers = DOMAINS.map(d=>d.questions.map(()=>null));
+let curDomain = 0;
+let results = null;
+
+/* ============ NAVIGATION ============ */
+function setRail(i){
+  const cells=document.querySelectorAll('#rail div');
+  cells.forEach((c,k)=>{c.className = k<i ? 'done' : (k===i?'on':'');});
+}
+function show(id){
+  ['stepIntro','stepSetup','stepAssess','stepResults','stepReport'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0});
+}
+function goIntro(){ show('stepIntro'); setRail(0); }
+function backToResults(){
+  document.getElementById('stepReport').classList.add('hidden');
+  setRail(3);
+  document.getElementById('stepResults').scrollIntoView({behavior:'smooth'});
+}
+function goSetup(){ show('stepSetup'); setRail(1); }
+function startAssessment(){
+  curDomain=0; renderDomain(); show('stepAssess'); setRail(2);
+}
+function renderDomain(){
+  const d=DOMAINS[curDomain];
+  document.getElementById('dTag').textContent = `Miền ${curDomain+1}/6 · ${d.code}`;
+  document.getElementById('dName').textContent = d.name;
+  document.getElementById('dLaw').textContent = d.law;
+  document.getElementById('dDesc').textContent = d.desc;
+  const answered = answers.flat().filter(a=>a!==null).length;
+  document.getElementById('pFill').style.width = (answered/24*100)+'%';
+  const host=document.getElementById('qHost'); host.innerHTML='';
+  d.questions.forEach((q,qi)=>{
+    const card=document.createElement('div'); card.className='qcard';
+    card.innerHTML=`<h4><span class="qnum">${d.code}.${qi+1}</span> ${q.t}</h4>`;
+    const opts=document.createElement('div'); opts.className='opts';
+    q.o.forEach((txt,li)=>{
+      const lab=document.createElement('label');
+      lab.className='opt'+(answers[curDomain][qi]===li?' sel':'');
+      lab.innerHTML=`<input type="radio" name="q${curDomain}_${qi}" ${answers[curDomain][qi]===li?'checked':''}>
+        <span><span class="lvl">${LEVEL_TAGS[li]}</span>${txt}</span>`;
+      lab.querySelector('input').addEventListener('change',()=>{
+        answers[curDomain][qi]=li;
+        opts.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+        lab.classList.add('sel');
+        const done = answers.flat().filter(a=>a!==null).length;
+        document.getElementById('pFill').style.width=(done/24*100)+'%';
+      });
+      opts.appendChild(lab);
+    });
+    card.appendChild(opts); host.appendChild(card);
+  });
+  document.getElementById('btnPrev').style.visibility='visible';
+  document.getElementById('btnPrev').textContent = curDomain===0 ? '← Quay lại thông tin đơn vị' : '← Miền trước';
+  document.getElementById('btnNext').textContent = curDomain===DOMAINS.length-1 ? 'Xem kết quả →' : 'Miền tiếp theo →';
+}
+function nextDomain(){
+  const missing = answers[curDomain].findIndex(a=>a===null);
+  if(missing>=0){ alert('Vui lòng trả lời đủ 4 câu của miền này trước khi tiếp tục.'); return; }
+  if(curDomain<DOMAINS.length-1){ curDomain++; renderDomain(); window.scrollTo({top:0}); }
+  else computeResults();
+}
+function prevDomain(){
+  if(curDomain>0){ curDomain--; renderDomain(); window.scrollTo({top:0}); }
+  else goSetup();
+}
+function backToAssess(){ curDomain=DOMAINS.length-1; renderDomain(); show('stepAssess'); setRail(2); }
+
+/* ============ SCORING ============ */
+function computeResults(){
+  const domainScores = DOMAINS.map((d,di)=>{
+    const s = answers[di].reduce((a,b)=>a+b,0) / (d.questions.length*4) * 100;
+    return Math.round(s);
+  });
+  const overall = Math.round(domainScores.reduce((a,b)=>a+b,0)/domainScores.length);
+  let mat = MATURITY[0];
+  MATURITY.forEach(m=>{ if(overall>=m.min) mat=m; });
+  // gaps: lowest-scoring individual questions
+  const gaps=[];
+  DOMAINS.forEach((d,di)=>d.questions.forEach((q,qi)=>{
+    gaps.push({d:d.name, code:`${d.code}.${qi+1}`, q:q.t, lvl:answers[di][qi]});
+  }));
+  gaps.sort((a,b)=>a.lvl-b.lvl);
+  results={domainScores,overall,mat,gaps:gaps.slice(0,6)};
+  renderResults(); show('stepResults'); setRail(3);
+}
+function renderResults(){
+  const r=results;
+  document.getElementById('ovScore').textContent=r.overall;
+  document.getElementById('matName').textContent=r.mat.name;
+  document.getElementById('matDesc').textContent=r.mat.desc;
+  const lvIdx = MATURITY.indexOf(r.mat);
+  document.getElementById('ladder').innerHTML =
+    MATURITY.map((_,i)=>`<span class="${i<=lvIdx?'lit':''}"></span>`).join('');
+  // bars
+  document.getElementById('barsHost').innerHTML = DOMAINS.map((d,i)=>`
+    <div class="dbar">
+      <div class="lbl"><b>${d.name}</b><span class="v">${r.domainScores[i]}/100</span></div>
+      <div class="track"><div class="fill" style="width:${r.domainScores[i]}%;background:${d.color}"></div></div>
+    </div>`).join('');
+  // radar
+  document.getElementById('radarHost').innerHTML = radarSVG(r.domainScores);
+  // gaps
+  document.getElementById('gapHost').innerHTML = r.gaps.map(g=>`
+    <div class="gapitem"><span class="gapdot"></span>
+      <div><b style="font-family:var(--font-mono);font-size:12px;color:var(--ink-soft)">${g.code} · ${g.d} · hiện ở ${LEVEL_TAGS[g.lvl]}</b><br>${g.q}</div>
+    </div>`).join('');
+  // tier recommendation
+  const dataScore=r.domainScores[1], techScore=r.domainScores[2];
+  const tiers=[
+    {n:"Tier 1 · Cloud AI", d:"Việc công khai: soạn thảo, dịch, brainstorm — máy chủ tại VN.", hot:true},
+    {n:"Tier 2 · Private AI", d:"Tra cứu quy chế, tài liệu phòng ban trong mạng LAN, phân quyền RBAC.", hot:dataScore<70},
+    {n:"Tier 3 · Local AI", d:"Cá nhân xử lý cục bộ trên máy, chạy được offline.", hot:techScore<60},
+    {n:"Tier 4 · USB AI", d:"Đề thi, hồ sơ mật: cách ly vật lý, zero-trace.", hot:answers[2][3]<=2}
+  ];
+  document.getElementById('tierHost').innerHTML = tiers.map(t=>`
+    <div class="tiercard ${t.hot?'hot':''}">
+      <span class="tname">${t.hot?'★ Ưu tiên · ':''}${t.n.split('·')[0]}</span>
+      <b>${t.n.split('·')[1]}</b>${t.d}
+    </div>`).join('');
+}
+function radarSVG(scores){
+  const cx=160,cy=150,R=105,n=scores.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]};
+  let rings='';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    rings+=`<polygon points="${scores.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#DDE4EE" stroke-width="1"/>`;
+  });
+  let axes='',labels='';
+  DOMAINS.forEach((d,i)=>{
+    const [x,y]=pt(i,R); axes+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#DDE4EE"/>`;
+    const [lx,ly]=pt(i,R+24);
+    labels+=`<text x="${lx}" y="${ly}" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono,monospace" fill="#4A5B75">${d.code}</text>
+             <text x="${lx}" y="${ly+12}" text-anchor="middle" font-size="10" font-weight="600" fill="#1B2B44">${scores[i]}</text>`;
+  });
+  const poly=scores.map((s,i)=>pt(i,R*s/100).join(',')).join(' ');
+  return `<svg viewBox="0 0 320 310" role="img" aria-label="Biểu đồ radar 6 miền" style="width:100%;max-width:340px;display:block;margin:0 auto">
+    ${rings}${axes}
+    <polygon points="${poly}" fill="rgba(247,148,29,.22)" stroke="#F7941D" stroke-width="2.5" stroke-linejoin="round"/>
+    ${scores.map((s,i)=>{const[x,y]=pt(i,R*s/100);return `<circle cx="${x}" cy="${y}" r="4" fill="#F7941D"/>`}).join('')}
+    ${labels}
+  </svg>`;
+}
+
+/* ============ GEMINI REPORT ============ */
+async function generateReport(){
+  const key=document.getElementById('apiKey').value.trim();
+  const model=document.getElementById('modelSel').value;
+  const status=document.getElementById('reportStatus');
+  const body=document.getElementById('reportBody');
+  document.getElementById('stepReport').classList.remove('hidden');
+  document.getElementById('reportActions').style.display='none';
+  setRail(4);
+  document.getElementById('stepReport').scrollIntoView({behavior:'smooth'});
+
+  const org=document.getElementById('orgName').value||'(chưa nhập tên đơn vị)';
+  document.getElementById('reportTitle').textContent=`Báo cáo đánh giá — ${org}`;
+  document.getElementById('reportMeta').textContent =
+    `${document.getElementById('orgType').value} · ${document.getElementById('orgSize').value} · Ngày ${new Date().toLocaleDateString('vi-VN')} · Điểm tổng: ${results.overall}/100 (${results.mat.name})`;
+
+  if(!key){
+    status.innerHTML=`<div class="errbox">Chưa có Gemini API key. Quay lại bước 1 để dán key, hoặc dùng nút <b>In / Lưu PDF</b> với kết quả chấm điểm hiện có.</div>`;
+    body.innerHTML=''; return;
+  }
+  status.innerHTML=`<p style="margin:14px 0"><span class="spin"></span>&nbsp; Đang gọi <b style="font-family:var(--font-mono);font-size:13px">${model}</b> để phân tích ${results.gaps.length} khoảng trống và 6 miền điểm số…</p>`;
+  body.innerHTML='';
+
+  const detail = DOMAINS.map((d,di)=>{
+    const qs=d.questions.map((q,qi)=>`  - [${d.code}.${qi+1}] ${q.t}\n    → Mức hiện tại ${answers[di][qi]}/4: "${q.o[answers[di][qi]]}"`).join('\n');
+    return `## ${d.name} (${d.law}) — Điểm: ${results.domainScores[di]}/100\n${qs}`;
+  }).join('\n\n');
+
+  const prompt = `Bạn là chuyên gia tư vấn an toàn thông tin và chuyển đổi số giáo dục tại Việt Nam, am hiểu Luật Trí tuệ nhân tạo 134/2025/QH15, Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Luật Dữ liệu 60/2024/QH15, Luật An ninh mạng 2018, Luật Công nghiệp công nghệ số 71/2025/QH15 và Thông tư 18/2026/TT-BGDĐT về Khung năng lực số cho giáo viên.
+
+Hãy viết BÁO CÁO ĐÁNH GIÁ MỨC ĐỘ TRƯỞNG THÀNH ỨNG DỤNG AI AN TOÀN cho đơn vị sau, bằng tiếng Việt, văn phong chuyên nghiệp dành cho lãnh đạo đơn vị và cơ quan quản lý cấp trên.
+
+THÔNG TIN ĐƠN VỊ:
+- Tên: ${org}
+- Loại hình: ${document.getElementById('orgType').value}
+- Quy mô: ${document.getElementById('orgSize').value}
+- Người đánh giá: ${document.getElementById('assessor').value||'không ghi'}
+
+KẾT QUẢ: Điểm tổng ${results.overall}/100 — ${results.mat.name}.
+
+CHI TIẾT TỪNG MIỀN VÀ CÂU TRẢ LỜI:
+${detail}
+
+YÊU CẦU BÁO CÁO (dùng Markdown, tiêu đề cấp ## cho mục lớn):
+## 1. Tóm tắt điều hành — 1 đoạn ngắn nêu bức tranh chung, mức trưởng thành, và 2-3 thông điệp chính cho lãnh đạo.
+## 2. Phân tích theo 6 miền — mỗi miền 2-4 câu: điểm mạnh, điểm yếu, và rủi ro pháp lý cụ thể nếu có (trích dẫn đúng tên luật liên quan).
+## 3. Khoảng trống ưu tiên và rủi ro — chọn 3-5 khoảng trống nghiêm trọng nhất từ các câu trả lời mức 0-1, giải thích hậu quả thực tế trong bối cảnh trường học/cơ quan Việt Nam.
+## 4. Lộ trình khắc phục 6–12 tháng — chia 3 giai đoạn (0-3 tháng: việc cấp bách; 3-6 tháng: chuẩn hóa; 6-12 tháng: nâng cao), mỗi giai đoạn 3-4 hành động cụ thể, khả thi với nguồn lực trường học Việt Nam.
+## 5. Đề xuất mô hình triển khai AI theo 4 tầng — tư vấn nên dùng tầng nào cho loại công việc nào của đơn vị này: Tier 1 Cloud AI tại VN (việc công khai), Tier 2 Private AI trong LAN (tài liệu nội bộ), Tier 3 Local AI trên máy cá nhân (offline), Tier 4 USB AI cách ly vật lý (đề thi, hồ sơ mật).
+## 6. Khuyến nghị về đào tạo — gắn với Thông tư 18/2026 và nhu cầu bồi dưỡng thường xuyên.
+
+Viết súc tích, cụ thể theo đúng câu trả lời của đơn vị (đừng chung chung), khoảng 900-1300 từ. Không thêm lời chào hay kết luận ngoài các mục trên.`;
+
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{role:'user',parts:[{text:prompt}]}],
+        generationConfig:{temperature:0.4,maxOutputTokens:4096}
+      })
+    });
+    if(!res.ok){
+      const e=await res.json().catch(()=>({}));
+      throw new Error(e?.error?.message || `HTTP ${res.status}`);
+    }
+    const data=await res.json();
+    const text=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+    if(!text) throw new Error('Không nhận được nội dung từ mô hình (có thể bị chặn bởi bộ lọc an toàn hoặc hết hạn mức).');
+    status.innerHTML='';
+    body.innerHTML=mdToHtml(text);
+    document.getElementById('reportActions').style.display='flex';
+  }catch(err){
+    status.innerHTML=`<div class="errbox"><b>Không sinh được báo cáo.</b><br>${escapeHtml(err.message)}<br><br>Kiểm tra: (1) key đúng và còn hạn mức tại Google AI Studio, (2) mạng không chặn <span style="font-family:var(--font-mono);font-size:12px">generativelanguage.googleapis.com</span>, (3) thử model khác ở bước 1.</div>`;
+  }
+}
+
+/* minimal markdown renderer */
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function mdToHtml(md){
+  const lines=escapeHtml(md).split('\n');
+  let html='',inUl=false,inOl=false;
+  const closeLists=()=>{if(inUl){html+='</ul>';inUl=false}if(inOl){html+='</ol>';inOl=false}};
+  const inline=s=>s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+  for(let raw of lines){
+    const l=raw.trimEnd();
+    if(/^###\s/.test(l)){closeLists();html+=`<h3>${inline(l.replace(/^###\s*/,''))}</h3>`}
+    else if(/^##\s/.test(l)){closeLists();html+=`<h2>${inline(l.replace(/^##\s*/,''))}</h2>`}
+    else if(/^#\s/.test(l)){closeLists();html+=`<h2>${inline(l.replace(/^#\s*/,''))}</h2>`}
+    else if(/^\s*[-*]\s+/.test(l)){if(!inUl){closeLists();html+='<ul>';inUl=true}html+=`<li>${inline(l.replace(/^\s*[-*]\s+/,''))}</li>`}
+    else if(/^\s*\d+[\.\)]\s+/.test(l)){if(!inOl){closeLists();html+='<ol>';inOl=true}html+=`<li>${inline(l.replace(/^\s*\d+[\.\)]\s+/,''))}</li>`}
+    else if(l===''){closeLists()}
+    else{closeLists();html+=`<p>${inline(l)}</p>`}
+  }
+  closeLists();return html;
+}
+</script>
+</body>
+</html>
